@@ -1,0 +1,13 @@
+[package]
+edition = "2021"
+name = "que"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bevy = "0.6.1"
+rand = "0.8.5"
+serde = {version = "1", features = ["derive"]}
+lazy_static = "1.4.0"
+ron = "0.7"
