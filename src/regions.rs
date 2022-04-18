@@ -179,7 +179,6 @@ const GEN_REGION_ITEMS: u64 = 32 * 32;
 pub fn spawn_tiles_sprite_system(mut commands: Commands, mut regions: ResMut<Regions>) {
     let pool: Pool<Vec<PlaneOrientation>> = get_plane_orientation_pool();
     regions.random_generate_tiles(GEN_REGION_ITEMS, &pool);
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     for (_, tile) in regions.tiles.iter() {
         let transform = tile.to_transform(SIZE, GAP).unwrap();
         commands
