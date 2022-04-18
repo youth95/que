@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
 use crate::components::TileType;
-use crate::marks::IDText;
+use crate::marks::{IDText, RegionId, RegionRect, RegionStatus};
 use crate::pool::Pool;
 use bevy::math::Vec3;
 use bevy::prelude::Transform;
@@ -185,7 +185,7 @@ pub fn spawn_tiles_sprite_system(
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
     let text_style = TextStyle {
         font,
-        font_size: 12.0,
+        font_size: 20.0,
         color: Color::WHITE,
     };
     let text_alignment = TextAlignment {
@@ -196,6 +196,12 @@ pub fn spawn_tiles_sprite_system(
     regions.random_generate_tiles(GEN_REGION_ITEMS, &pool);
     for (_, tile) in regions.tiles.iter() {
         let transform = tile.to_transform(SIZE, GAP).unwrap();
+        let region_id = RegionId(tile.id);
+        let tile_type = tile.to_tile_type();
+        let region_status: RegionStatus = match tile_type {
+            TileType::Started => RegionStatus::Found,
+            _ => RegionStatus::Mist,
+        };
         commands
             .spawn()
             .insert_bundle(SpriteBundle::default())
@@ -203,7 +209,10 @@ pub fn spawn_tiles_sprite_system(
             .insert(Sprite {
                 color: Color::BLUE,
                 ..Default::default()
-            });
+            })
+            .insert(region_status)
+            .insert(RegionRect)
+            .insert(region_id);
         commands
             .spawn_bundle(Text2dBundle {
                 text: Text::with_section(
@@ -218,6 +227,67 @@ pub fn spawn_tiles_sprite_system(
                 },
                 ..Default::default()
             })
-            .insert(IDText);
+            .insert(IDText)
+            .insert(region_id.clone());
+    }
+}
+
+pub struct TriggerRegionEvent(pub u64);
+
+pub fn trigger_region_system(
+    mut commands: Commands,
+    mut trigger_region_event: EventReader<TriggerRegionEvent>,
+    regions: ResMut<Regions>,
+    mut sprite_query: Query<(Entity, &RegionId, &RegionStatus), With<RegionRect>>,
+) {
+    let mut found_tiles = Vec::<&Tile>::new();
+    for ev in trigger_region_event.iter() {
+        let TriggerRegionEvent(entity) = ev;
+        for (en, RegionId(region_id), status) in sprite_query.iter_mut() {
+            match status {
+                RegionStatus::Found => {
+                    if region_id == entity {
+                        commands.entity(en).insert(RegionStatus::Visited);
+                        if let Some(tile) = regions.tiles.get(region_id) {
+                            found_tiles.push(&tile);
+                        }
+                    }
+                }
+                _ => (),
+            }
+        }
+    }
+
+    for tile in found_tiles {
+        for tile_id in tile.adjacent.clone().into_iter() {
+            for (en, RegionId(id), status, ..) in sprite_query.iter_mut() {
+                match status {
+                    RegionStatus::Mist => {
+                        if *id == tile_id {
+                            commands.entity(en).insert(RegionStatus::Found);
+                        }
+                    }
+                    _ => (),
+                }
+            }
+        }
+    }
+}
+
+pub fn region_rect_color_system(
+    mut region_react_query: Query<(&mut Sprite, &RegionStatus), With<RegionRect>>,
+) {
+    for (mut sprite, status) in region_react_query.iter_mut() {
+        match status {
+            RegionStatus::Mist => {
+                sprite.color = Color::BLACK;
+            }
+            RegionStatus::Found => {
+                sprite.color = Color::GREEN;
+            }
+            RegionStatus::Visited => {
+                sprite.color = Color::GRAY;
+            }
+        }
     }
 }

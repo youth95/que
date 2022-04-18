@@ -4,7 +4,7 @@ use bevy_console::ConsoleCommand;
 use crate::marks::IDText;
 
 #[derive(ConsoleCommand)]
-#[console_command(name = "switch")]
+#[console_command(name = "set")]
 pub struct SwitchCommand {
     flag: String,
     value: i32,
