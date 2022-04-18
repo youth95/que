@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use que::{
     regions::{
-        region_rect_color_system, spawn_tiles_sprite_system, trigger_region_system, Regions,
-        TriggerRegionEvent,
+        mouse_interaction, region_rect_color_system, spawn_tiles_sprite_system,
+        trigger_region_system, Regions, TriggerRegionEvent,
     },
     CameraPlugin, DebuggerPlugin,
 };
@@ -21,6 +21,7 @@ fn main() {
         .init_resource::<Regions>()
         .add_startup_system(spawn_tiles_sprite_system)
         .add_system(trigger_region_system)
+        .add_system(mouse_interaction)
         .add_system(region_rect_color_system)
         .run();
 }

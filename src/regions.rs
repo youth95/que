@@ -291,3 +291,32 @@ pub fn region_rect_color_system(
         }
     }
 }
+
+pub fn mouse_interaction(
+    windows: Res<Windows>,
+    buttons: Res<Input<MouseButton>>,
+    keyboard_input: Res<Input<KeyCode>>,
+    mut trigger_region_event: EventWriter<TriggerRegionEvent>,
+    q_camera: Query<&Transform, With<Camera>>,
+    q_regions: Query<(&RegionId, &Transform), With<Sprite>>,
+) {
+    if buttons.just_pressed(MouseButton::Left) && !keyboard_input.pressed(KeyCode::Space) {
+        if let Some(wnd) = windows.get_primary() {
+            if let Some(pos) = wnd.cursor_position() {
+                let size = Vec2::new(wnd.width() as f32, wnd.height() as f32);
+                let p = pos - size / 2.0;
+                if let Ok(camera_transform) = q_camera.get_single() {
+                    // apply the camera transform
+                    let pos_wld = camera_transform.compute_matrix() * p.extend(0.0).extend(1.0);
+                    for (RegionId(id), region) in q_regions.iter() {
+                        let dx = (pos_wld.x - region.translation.x).abs();
+                        let dy = (pos_wld.y - region.translation.y).abs();
+                        if dx <= region.scale.x / 2. && dy <= region.scale.y / 2. {
+                            trigger_region_event.send(TriggerRegionEvent(*id));
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
