@@ -9,6 +9,9 @@ pub mod region_type;
 pub struct Region(pub Tile);
 
 #[derive(Component)]
+pub struct IDText;
+
+#[derive(Component)]
 pub struct Player;
 
 #[derive(Component)]

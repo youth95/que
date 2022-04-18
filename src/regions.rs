@@ -3,9 +3,10 @@ use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
 use crate::components::TileType;
+use crate::marks::IDText;
+use crate::pool::Pool;
 use bevy::math::Vec3;
 use bevy::prelude::Transform;
-use crate::pool::Pool;
 
 use super::pool::terrains::{AxisDirection, PlaneOrientation, Point};
 
@@ -168,15 +169,29 @@ impl Regions {
     }
 }
 
-use bevy::prelude::*;
 use crate::pool::terrains::get_plane_orientation_pool;
+use bevy::prelude::*;
 
 const SIZE: f32 = 32.;
 const GAP: f32 = 4.;
 
 const GEN_REGION_ITEMS: u64 = 32 * 32;
 
-pub fn spawn_tiles_sprite_system(mut commands: Commands, mut regions: ResMut<Regions>) {
+pub fn spawn_tiles_sprite_system(
+    mut commands: Commands,
+    mut regions: ResMut<Regions>,
+    asset_server: Res<AssetServer>,
+) {
+    let font = asset_server.load("fonts/FiraSans-Bold.ttf");
+    let text_style = TextStyle {
+        font,
+        font_size: 12.0,
+        color: Color::WHITE,
+    };
+    let text_alignment = TextAlignment {
+        vertical: VerticalAlign::Center,
+        horizontal: HorizontalAlign::Center,
+    };
     let pool: Pool<Vec<PlaneOrientation>> = get_plane_orientation_pool();
     regions.random_generate_tiles(GEN_REGION_ITEMS, &pool);
     for (_, tile) in regions.tiles.iter() {
@@ -189,5 +204,20 @@ pub fn spawn_tiles_sprite_system(mut commands: Commands, mut regions: ResMut<Reg
                 color: Color::BLUE,
                 ..Default::default()
             });
+        commands
+            .spawn_bundle(Text2dBundle {
+                text: Text::with_section(
+                    format!("{}", tile.id),
+                    text_style.clone(),
+                    text_alignment,
+                ),
+                visibility: Visibility { is_visible: false },
+                transform: Transform {
+                    translation: Vec3::new(transform.translation.x, transform.translation.y, 1.),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+            .insert(IDText);
     }
 }

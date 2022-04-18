@@ -121,6 +121,6 @@ impl PlaneOrientation {
 }
 
 pub fn get_plane_orientation_pool() -> Pool<Vec<PlaneOrientation>> {
-    let config = include_str!("../assets/pool/terrains.ron");
+    let config = include_str!("../../assets/pool/terrains.ron");
     ron::from_str(config).unwrap()
 }
