@@ -7,6 +7,7 @@ use crate::marks::{IDText, RegionId, RegionRect, RegionStatus};
 use crate::pool::Pool;
 use bevy::math::Vec3;
 use bevy::prelude::Transform;
+use bevy_kira_audio::Audio;
 
 use super::pool::terrains::{AxisDirection, PlaneOrientation, Point};
 
@@ -234,11 +235,14 @@ pub fn spawn_tiles_sprite_system(
 
 pub struct TriggerRegionEvent(pub u64);
 
+
 pub fn trigger_region_system(
     mut commands: Commands,
     mut trigger_region_event: EventReader<TriggerRegionEvent>,
     regions: ResMut<Regions>,
     mut sprite_query: Query<(Entity, &RegionId, &RegionStatus), With<RegionRect>>,
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
 ) {
     let mut found_tiles = Vec::<&Tile>::new();
     for ev in trigger_region_event.iter() {
@@ -248,6 +252,7 @@ pub fn trigger_region_system(
                 RegionStatus::Found => {
                     if region_id == entity {
                         commands.entity(en).insert(RegionStatus::Visited);
+                        audio.play(asset_server.load("sounds/click.wav"));
                         if let Some(tile) = regions.tiles.get(region_id) {
                             found_tiles.push(&tile);
                         }
@@ -273,6 +278,8 @@ pub fn trigger_region_system(
         }
     }
 }
+
+
 
 pub fn region_rect_color_system(
     mut region_react_query: Query<(&mut Sprite, &RegionStatus), With<RegionRect>>,

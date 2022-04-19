@@ -6,9 +6,32 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = "0.6.1"
 bevy_console = "0.3.0"
 lazy_static = "1.4.0"
 rand = "0.8.5"
 ron = "0.7"
 serde = {version = "1", features = ["derive"]}
+
+[dependencies.bevy]
+default-features = false
+version = "0.6.1"
+# These are the remaining default features other than `bevy_audio` and `mp3`
+features = [
+  "render",
+  "bevy_winit", # "bevy_gilrs",  # "png",
+  # "hdr",
+  # "filesystem_watcher",
+  # "x11"
+]
+
+[dependencies.bevy_kira_audio]
+version = "0.8.0"
+# `ogg` format support is enabled by default, disable if you don't want it
+default-features = false
+# enable the features you care about
+features = [
+  "wav",
+  # "flac",
+  # "mp3",
+  # "ogg",
+]
