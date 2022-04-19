@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
 use crate::components::TileType;
-use crate::marks::{IDText, RegionId, RegionRect, RegionStatus};
+use crate::marks::{Enemy, EnemyMark, HPText, IDText, RegionId, RegionRect, RegionStatus};
 use crate::pool::Pool;
 use bevy::math::Vec3;
 use bevy::prelude::Transform;
@@ -183,11 +183,11 @@ pub fn spawn_tiles_sprite_system(
     mut regions: ResMut<Regions>,
     asset_server: Res<AssetServer>,
 ) {
-    let font = asset_server.load("fonts/FiraSans-Bold.ttf");
+    let font = asset_server.load("fonts/hanti.ttf");
     let text_style = TextStyle {
         font,
-        font_size: 20.0,
-        color: Color::WHITE,
+        font_size: 12.0,
+        color: Color::PINK,
     };
     let text_alignment = TextAlignment {
         vertical: VerticalAlign::Center,
@@ -203,17 +203,66 @@ pub fn spawn_tiles_sprite_system(
             TileType::Started => RegionStatus::Found,
             _ => RegionStatus::Mist,
         };
-        commands
-            .spawn()
-            .insert_bundle(SpriteBundle::default())
-            .insert(transform)
-            .insert(Sprite {
-                color: Color::BLUE,
-                ..Default::default()
-            })
-            .insert(region_status)
-            .insert(RegionRect)
-            .insert(region_id);
+
+        match tile_type {
+            TileType::Room => {
+                let enemy = Enemy {
+                    name: "怪".to_string(),
+                    max_hp: 20,
+                    cur_hp: 20,
+                };
+                commands
+                    .spawn()
+                    .insert_bundle(SpriteBundle::default())
+                    .insert(transform)
+                    .insert(Sprite {
+                        color: Color::BLUE,
+                        ..Default::default()
+                    })
+                    .insert(region_status)
+                    .insert(RegionRect)
+                    .insert(EnemyMark)
+                    .insert(region_id);
+                // current_hp
+                commands
+                    .spawn_bundle(Text2dBundle {
+                        text: Text::with_section(
+                            format!("{}\n{}/{}", enemy.name, enemy.cur_hp, enemy.max_hp),
+                            text_style.clone(),
+                            text_alignment,
+                        ),
+                        visibility: Visibility { is_visible: false },
+                        transform: Transform {
+                            translation: Vec3::new(
+                                transform.translation.x,
+                                transform.translation.y,
+                                1.,
+                            ),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    })
+                    .insert(HPText)
+                    .insert(EnemyMark)
+                    .insert(region_id.clone())
+                    .insert(enemy);
+            }
+            _ => {
+                commands
+                    .spawn()
+                    .insert_bundle(SpriteBundle::default())
+                    .insert(transform)
+                    .insert(Sprite {
+                        color: Color::BLUE,
+                        ..Default::default()
+                    })
+                    .insert(region_status)
+                    .insert(RegionRect)
+                    .insert(region_id);
+            }
+        }
+
+        // id
         commands
             .spawn_bundle(Text2dBundle {
                 text: Text::with_section(
@@ -235,18 +284,92 @@ pub fn spawn_tiles_sprite_system(
 
 pub struct TriggerRegionEvent(pub u64);
 
+pub struct ChangeEnemyHpEvent(pub u64, pub i64);
 
-pub fn trigger_region_system(
-    mut commands: Commands,
+pub struct ChangeRegionStatusEvent(pub u64, pub RegionStatus);
+
+pub fn atk_monster(
+    query: Query<(&RegionId, &RegionStatus), (With<RegionRect>, With<EnemyMark>)>,
     mut trigger_region_event: EventReader<TriggerRegionEvent>,
+    mut change_enemy_hp_event: EventWriter<ChangeEnemyHpEvent>,
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
+) {
+    for TriggerRegionEvent(id) in trigger_region_event.iter() {
+        for (RegionId(region_id), region_status) in query.iter() {
+            if region_id == id {
+                if *region_status == RegionStatus::Found {
+                    change_enemy_hp_event.send(ChangeEnemyHpEvent(*id, -2));
+                    audio.pause();
+                    audio.play(asset_server.load("sounds/dao5.mp3"));
+                }
+            }
+        }
+    }
+}
+
+pub fn visit_region(
+    query: Query<(&RegionId, &RegionStatus), (With<RegionRect>, Without<EnemyMark>)>,
+    mut trigger_region_event: EventReader<TriggerRegionEvent>,
+    mut change_region_status_event: EventWriter<ChangeRegionStatusEvent>,
+) {
+    for TriggerRegionEvent(id) in trigger_region_event.iter() {
+        for (RegionId(region_id), region_status) in query.iter() {
+            if region_id == id && *region_status == RegionStatus::Found {
+                change_region_status_event
+                    .send(ChangeRegionStatusEvent(*region_id, RegionStatus::Mist));
+            }
+        }
+    }
+}
+
+pub fn update_enemy_hp_text_system(
+    asset_server: Res<AssetServer>,
+    mut query: Query<(&mut Text, &mut Enemy, &RegionId), (With<Enemy>, With<HPText>)>,
+    mut change_enemy_hp_event: EventReader<ChangeEnemyHpEvent>,
+    mut change_region_status_event: EventWriter<ChangeRegionStatusEvent>,
+) {
+    let font = asset_server.load("fonts/hanti.ttf");
+    let text_style = TextStyle {
+        font,
+        font_size: 12.0,
+        color: Color::PINK,
+    };
+    let text_alignment = TextAlignment {
+        vertical: VerticalAlign::Center,
+        horizontal: HorizontalAlign::Center,
+    };
+    for ChangeEnemyHpEvent(id, val) in change_enemy_hp_event.iter() {
+        for (mut text, mut enemy, RegionId(region_id)) in &mut query.iter_mut() {
+            if region_id == id && enemy.cur_hp > 0 {
+                enemy.cur_hp += val;
+                text.set(Box::new(Text::with_section(
+                    format!("{}\n{}/{}", enemy.name, enemy.cur_hp, enemy.max_hp),
+                    text_style.clone(),
+                    text_alignment,
+                )))
+                .unwrap();
+                if enemy.cur_hp <= 0 {
+                    change_region_status_event
+                        .send(ChangeRegionStatusEvent(*id, RegionStatus::Mist));
+                }
+            }
+        }
+    }
+}
+
+pub fn change_region_status_system(
+    mut commands: Commands,
+    mut change_region_status_event: EventReader<ChangeRegionStatusEvent>,
     regions: ResMut<Regions>,
     mut sprite_query: Query<(Entity, &RegionId, &RegionStatus), With<RegionRect>>,
+    mut hp_text_query: Query<(&mut Visibility, &RegionId), (With<Enemy>, With<HPText>)>,
     asset_server: Res<AssetServer>,
     audio: Res<Audio>,
 ) {
     let mut found_tiles = Vec::<&Tile>::new();
-    for ev in trigger_region_event.iter() {
-        let TriggerRegionEvent(entity) = ev;
+    for ev in change_region_status_event.iter() {
+        let ChangeRegionStatusEvent(entity, ..) = ev;
         for (en, RegionId(region_id), status) in sprite_query.iter_mut() {
             match status {
                 RegionStatus::Found => {
@@ -269,6 +392,7 @@ pub fn trigger_region_system(
                 match status {
                     RegionStatus::Mist => {
                         if *id == tile_id {
+                            // HPText
                             commands.entity(en).insert(RegionStatus::Found);
                         }
                     }
@@ -276,10 +400,17 @@ pub fn trigger_region_system(
                 }
             }
         }
+        for tile_id in tile.adjacent.clone().into_iter() {
+            for (mut visibility, RegionId(region_id), ..) in hp_text_query.iter_mut() {
+                if tile_id == *region_id {
+                    visibility.is_visible = true;
+                }
+            }
+        }
     }
+
+    // hp_text_query
 }
-
-
 
 pub fn region_rect_color_system(
     mut region_react_query: Query<(&mut Sprite, &RegionStatus), With<RegionRect>>,
@@ -302,12 +433,11 @@ pub fn region_rect_color_system(
 pub fn mouse_interaction(
     windows: Res<Windows>,
     buttons: Res<Input<MouseButton>>,
-    keyboard_input: Res<Input<KeyCode>>,
     mut trigger_region_event: EventWriter<TriggerRegionEvent>,
     q_camera: Query<&Transform, With<Camera>>,
     q_regions: Query<(&RegionId, &Transform), With<Sprite>>,
 ) {
-    if buttons.just_pressed(MouseButton::Left) && !keyboard_input.pressed(KeyCode::Space) {
+    if buttons.just_pressed(MouseButton::Left) {
         if let Some(wnd) = windows.get_primary() {
             if let Some(pos) = wnd.cursor_position() {
                 let size = Vec2::new(wnd.width() as f32, wnd.height() as f32);

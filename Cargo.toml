@@ -32,6 +32,6 @@ default-features = false
 features = [
   "wav",
   # "flac",
-  # "mp3",
+  "mp3",
   # "ogg",
 ]
