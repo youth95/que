@@ -28,6 +28,9 @@ pub struct EnemyMark;
 pub struct HPText;
 
 #[derive(Component)]
+pub struct HPColor;
+
+#[derive(Component)]
 pub struct NPC;
 
 #[derive(Component, Clone, Copy, PartialEq)]

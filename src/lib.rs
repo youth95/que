@@ -16,6 +16,7 @@ pub use camera::CameraPlugin;
 pub use debugger::DebuggerPlugin;
 use regions::{
     atk_monster, mouse_interaction, region_rect_color_system, spawn_tiles_sprite_system,
+    update_enemy_hp_system,
     change_region_status_system, update_enemy_hp_text_system, visit_region, ChangeEnemyHpEvent,
     ChangeRegionStatusEvent, Regions, TriggerRegionEvent,
 };
@@ -35,6 +36,7 @@ impl Plugin for GamePlugin {
             .add_system(mouse_interaction)
             .add_system(atk_monster)
             .add_system(visit_region)
+            .add_system(update_enemy_hp_system)
             .add_system(update_enemy_hp_text_system)
             .add_system(change_region_status_system)
             .add_system(region_rect_color_system);

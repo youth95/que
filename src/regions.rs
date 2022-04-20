@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
 use crate::components::TileType;
-use crate::marks::{Enemy, EnemyMark, HPText, IDText, RegionId, RegionRect, RegionStatus};
+use crate::marks::{Enemy, EnemyMark, HPColor, HPText, IDText, RegionId, RegionRect, RegionStatus};
 use crate::pool::Pool;
 use bevy::math::Vec3;
 use bevy::prelude::Transform;
@@ -178,21 +178,7 @@ const GAP: f32 = 4.;
 
 const GEN_REGION_ITEMS: u64 = 32 * 32;
 
-pub fn spawn_tiles_sprite_system(
-    mut commands: Commands,
-    mut regions: ResMut<Regions>,
-    asset_server: Res<AssetServer>,
-) {
-    let font = asset_server.load("fonts/hanti.ttf");
-    let text_style = TextStyle {
-        font,
-        font_size: 12.0,
-        color: Color::PINK,
-    };
-    let text_alignment = TextAlignment {
-        vertical: VerticalAlign::Center,
-        horizontal: HorizontalAlign::Center,
-    };
+pub fn spawn_tiles_sprite_system(mut commands: Commands, mut regions: ResMut<Regions>) {
     let pool: Pool<Vec<PlaneOrientation>> = get_plane_orientation_pool();
     regions.random_generate_tiles(GEN_REGION_ITEMS, &pool);
     for (_, tile) in regions.tiles.iter() {
@@ -223,20 +209,35 @@ pub fn spawn_tiles_sprite_system(
                     .insert(RegionRect)
                     .insert(EnemyMark)
                     .insert(region_id);
+                // hp_color
+                commands
+                    .spawn()
+                    .insert_bundle(SpriteBundle::default())
+                    .insert(Transform {
+                        translation: Vec3::new(
+                            transform.translation.x,
+                            transform.translation.y,
+                            1.,
+                        ),
+                        scale: transform.scale,
+                        ..Default::default()
+                    })
+                    .insert(Sprite {
+                        color: Color::rgba_u8(255, 0, 0, 255),
+                        ..Default::default()
+                    })
+                    .insert(HPColor)
+                    .insert(Visibility { is_visible: false })
+                    .insert(region_id);
                 // current_hp
                 commands
                     .spawn_bundle(Text2dBundle {
-                        text: Text::with_section(
-                            format!("{}\n{}/{}", enemy.name, enemy.cur_hp, enemy.max_hp),
-                            text_style.clone(),
-                            text_alignment,
-                        ),
                         visibility: Visibility { is_visible: false },
                         transform: Transform {
                             translation: Vec3::new(
                                 transform.translation.x,
                                 transform.translation.y,
-                                1.,
+                                2.,
                             ),
                             ..Default::default()
                         },
@@ -263,22 +264,22 @@ pub fn spawn_tiles_sprite_system(
         }
 
         // id
-        commands
-            .spawn_bundle(Text2dBundle {
-                text: Text::with_section(
-                    format!("{}", tile.id),
-                    text_style.clone(),
-                    text_alignment,
-                ),
-                visibility: Visibility { is_visible: false },
-                transform: Transform {
-                    translation: Vec3::new(transform.translation.x, transform.translation.y, 1.),
-                    ..Default::default()
-                },
-                ..Default::default()
-            })
-            .insert(IDText)
-            .insert(region_id.clone());
+        // commands
+        //     .spawn_bundle(Text2dBundle {
+        //         text: Text::with_section(
+        //             format!("{}", tile.id),
+        //             text_style.clone(),
+        //             text_alignment,
+        //         ),
+        //         visibility: Visibility { is_visible: false },
+        //         transform: Transform {
+        //             translation: Vec3::new(transform.translation.x, transform.translation.y, 1.),
+        //             ..Default::default()
+        //         },
+        //         ..Default::default()
+        //     })
+        //     .insert(IDText)
+        //     .insert(region_id.clone());
     }
 }
 
@@ -323,36 +324,49 @@ pub fn visit_region(
     }
 }
 
-pub fn update_enemy_hp_text_system(
-    asset_server: Res<AssetServer>,
-    mut query: Query<(&mut Text, &mut Enemy, &RegionId), (With<Enemy>, With<HPText>)>,
+pub fn update_enemy_hp_system(
+    mut query: Query<(&mut Enemy, &RegionId)>,
     mut change_enemy_hp_event: EventReader<ChangeEnemyHpEvent>,
     mut change_region_status_event: EventWriter<ChangeRegionStatusEvent>,
+) {
+    for ChangeEnemyHpEvent(id, val) in change_enemy_hp_event.iter() {
+        for (mut enemy, RegionId(region_id)) in &mut query.iter_mut() {
+            if region_id == id && enemy.cur_hp > 0 {
+                enemy.cur_hp += val;
+                if enemy.cur_hp <= 0 {
+                    change_region_status_event
+                        .send(ChangeRegionStatusEvent(*id, RegionStatus::Mist));
+                }
+            }
+        }
+    }
+}
+
+pub fn update_enemy_hp_text_system(
+    asset_server: Res<AssetServer>,
+    mut query: Query<(&mut Text, &mut Enemy, &RegionId), (Changed<Enemy>, With<HPText>)>,
+    mut query_color: Query<(&mut Sprite, &RegionId), With<HPColor>>,
 ) {
     let font = asset_server.load("fonts/hanti.ttf");
     let text_style = TextStyle {
         font,
-        font_size: 12.0,
-        color: Color::PINK,
+        font_size: 18.0,
+        color: Color::WHITE,
     };
     let text_alignment = TextAlignment {
         vertical: VerticalAlign::Center,
         horizontal: HorizontalAlign::Center,
     };
-    for ChangeEnemyHpEvent(id, val) in change_enemy_hp_event.iter() {
-        for (mut text, mut enemy, RegionId(region_id)) in &mut query.iter_mut() {
-            if region_id == id && enemy.cur_hp > 0 {
-                enemy.cur_hp += val;
-                text.set(Box::new(Text::with_section(
-                    format!("{}\n{}/{}", enemy.name, enemy.cur_hp, enemy.max_hp),
-                    text_style.clone(),
-                    text_alignment,
-                )))
-                .unwrap();
-                if enemy.cur_hp <= 0 {
-                    change_region_status_event
-                        .send(ChangeRegionStatusEvent(*id, RegionStatus::Mist));
-                }
+    for (mut text, enemy, RegionId(id)) in &mut query.iter_mut() {
+        text.set(Box::new(Text::with_section(
+            format!("{}\n{}/{}", enemy.name, enemy.cur_hp, enemy.max_hp),
+            text_style.clone(),
+            text_alignment,
+        )))
+        .unwrap();
+        for (mut sp, RegionId(region_id)) in &mut query_color.iter_mut() {
+            if region_id == id {
+                sp.color.set_a(enemy.cur_hp as f32 / enemy.max_hp as f32);
             }
         }
     }
@@ -363,7 +377,11 @@ pub fn change_region_status_system(
     mut change_region_status_event: EventReader<ChangeRegionStatusEvent>,
     regions: ResMut<Regions>,
     mut sprite_query: Query<(Entity, &RegionId, &RegionStatus), With<RegionRect>>,
-    mut hp_text_query: Query<(&mut Visibility, &RegionId), (With<Enemy>, With<HPText>)>,
+    mut hp_text_query: Query<
+        (&mut Visibility, &RegionId),
+        (With<Enemy>, With<HPText>, Without<HPColor>),
+    >,
+    mut hp_text_color_query: Query<(&mut Visibility, &RegionId), With<HPColor>>,
     asset_server: Res<AssetServer>,
     audio: Res<Audio>,
 ) {
@@ -402,6 +420,14 @@ pub fn change_region_status_system(
         }
         for tile_id in tile.adjacent.clone().into_iter() {
             for (mut visibility, RegionId(region_id), ..) in hp_text_query.iter_mut() {
+                if tile_id == *region_id {
+                    visibility.is_visible = true;
+                }
+            }
+        }
+
+        for tile_id in tile.adjacent.clone().into_iter() {
+            for (mut visibility, RegionId(region_id), ..) in hp_text_color_query.iter_mut() {
                 if tile_id == *region_id {
                     visibility.is_visible = true;
                 }
