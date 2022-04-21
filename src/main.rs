@@ -1,4 +1,4 @@
-use bevy::{prelude::App, window::WindowDescriptor, DefaultPlugins};
+use bevy::{prelude::App, window::WindowDescriptor, DefaultPlugins, diagnostic::FrameTimeDiagnosticsPlugin};
 use que::GamePlugin;
 fn main() {
     App::new()
@@ -9,6 +9,7 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
+        .add_plugin(FrameTimeDiagnosticsPlugin)
         .add_plugin(GamePlugin)
         .run();
 }

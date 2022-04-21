@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_kira_audio::Audio;
 
+use crate::camera::SceneCamera;
 use crate::marks::{EnemyMark, RegionId, RegionRect};
 
 use super::events::PlayAudioEvent;
@@ -151,7 +152,7 @@ fn mouse_interaction(
     windows: Res<Windows>,
     buttons: Res<Input<MouseButton>>,
     mut trigger_region_event: EventWriter<RegionClickEvent>,
-    q_camera: Query<&Transform, With<Camera>>,
+    q_camera: Query<&Transform, With<SceneCamera>>,
     q_regions: Query<(&RegionId, &Transform), With<Sprite>>,
 ) {
     if buttons.just_pressed(MouseButton::Left) {

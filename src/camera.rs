@@ -1,6 +1,9 @@
 use bevy::{input::mouse::MouseMotion, prelude::*};
 pub struct CameraPlugin;
 
+#[derive(Component)]
+pub struct SceneCamera;
+
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup).add_system(motion);
@@ -8,11 +11,13 @@ impl Plugin for CameraPlugin {
 }
 
 fn setup(mut commands: Commands) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands
+        .spawn_bundle(OrthographicCameraBundle::new_2d())
+        .insert(SceneCamera);
 }
 
 fn motion(
-    mut camera_query: Query<&mut Transform, With<Camera>>,
+    mut camera_query: Query<&mut Transform, With<SceneCamera>>,
     mut motion_evr: EventReader<MouseMotion>,
     buttons: Res<Input<MouseButton>>,
 ) {

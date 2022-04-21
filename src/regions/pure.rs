@@ -1,6 +1,7 @@
 use crate::{
     components::TileType,
     marks::{EnemyText, HPColor},
+    player::Player,
 };
 use bevy::prelude::*;
 pub struct RegionPurePlugin;
@@ -56,6 +57,7 @@ pub fn spawn_region_system(mut commands: Commands, mut regions: ResMut<Regions>)
 }
 
 pub fn atk_monster(
+    mut player_query: Query<&mut Player>,
     query: Query<(&RegionId, &RegionStatus), With<EnemyMark>>,
     mut trigger_region_event: EventReader<RegionClickEvent>,
     mut change_enemy_hp_event: EventWriter<ChangeEnemyHpEvent>,
@@ -66,6 +68,7 @@ pub fn atk_monster(
             if region_id == id {
                 if *region_status == RegionStatus::Found {
                     change_enemy_hp_event.send(ChangeEnemyHpEvent(*id, -2));
+                    player_query.get_single_mut().unwrap().cur_hp -= 1;
                     play_audio_event.send(PlayAudioEvent("sounds/dao5.mp3".to_string()));
                 }
             }
