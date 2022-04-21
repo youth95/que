@@ -23,6 +23,8 @@ pub struct EnemyMark;
 #[derive(Component)]
 pub struct EnemyStatus {
     pub name: String,
+    pub atk: i64,
+    pub def: i64,
     pub max_hp: u64,
     pub cur_hp: i64,
 }

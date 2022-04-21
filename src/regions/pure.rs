@@ -60,6 +60,8 @@ pub fn spawn_region_system(mut commands: Commands, mut regions: ResMut<Regions>)
                     name: "怪".to_string(),
                     max_hp: 20,
                     cur_hp: 20,
+                    atk: 3,
+                    def: 1,
                 })
                 .insert(EnemyMark);
         }
@@ -68,18 +70,21 @@ pub fn spawn_region_system(mut commands: Commands, mut regions: ResMut<Regions>)
 
 pub fn atk_monster(
     mut player_query: Query<&mut Player>,
-    query: Query<(&RegionId, &RegionStatus), With<EnemyMark>>,
+    query: Query<(&RegionId, &RegionStatus, &EnemyStatus)>,
     mut trigger_region_event: EventReader<RegionClickEvent>,
     mut change_enemy_hp_event: EventWriter<ChangeEnemyHpEvent>,
     mut play_audio_event: EventWriter<PlayAudioEvent>,
 ) {
     for RegionClickEvent(id) in trigger_region_event.iter() {
-        for (RegionId(region_id), region_status) in query.iter() {
+        for (RegionId(region_id), region_status, enemy) in query.iter() {
             if region_id == id {
                 if *region_status == RegionStatus::Found {
-                    change_enemy_hp_event.send(ChangeEnemyHpEvent(*id, -2));
-                    player_query.get_single_mut().unwrap().cur_hp -= 1;
-                    play_audio_event.send(PlayAudioEvent("sounds/dao5.mp3".to_string()));
+                    if let Ok(mut player) = player_query.get_single_mut() {
+                        change_enemy_hp_event
+                            .send(ChangeEnemyHpEvent(*id, -(player.atk - enemy.def)));
+                        player.cur_hp -= (enemy.atk - player.def).max(0);
+                        play_audio_event.send(PlayAudioEvent("sounds/dao5.mp3".to_string()));
+                    }
                 }
             }
         }
@@ -109,7 +114,7 @@ pub fn update_enemy_hp_system(
     for ChangeEnemyHpEvent(id, val) in change_enemy_hp_event.iter() {
         for (mut enemy, RegionId(region_id)) in &mut query.iter_mut() {
             if region_id == id && enemy.cur_hp > 0 {
-                enemy.cur_hp += val;
+                enemy.cur_hp = (enemy.cur_hp + val).max(0);
                 if enemy.cur_hp <= 0 {
                     change_region_status_event
                         .send(ChangeRegionStatusEvent(*id, RegionStatus::Mist));
