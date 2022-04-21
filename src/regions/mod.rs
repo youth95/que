@@ -1,13 +1,13 @@
+mod events;
 mod manager;
 mod pure;
 mod renderer;
 
 use bevy::prelude::Plugin;
 
+pub use self::events::{ChangeEnemyHpEvent, ChangeRegionStatusEvent, TriggerRegionEvent};
 pub use self::manager::Regions;
-pub use self::pure::{
-    ChangeEnemyHpEvent, ChangeRegionStatusEvent, RegionPurePlugin, TriggerRegionEvent,
-};
+use self::pure::RegionPurePlugin;
 use self::renderer::RegionRenderPlugin;
 
 pub struct RegionPlugin;

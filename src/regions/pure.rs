@@ -1,20 +1,18 @@
-use crate::{components::TileType, marks::{EnemyText, HPColor}};
+use crate::{
+    components::TileType,
+    marks::{EnemyText, HPColor},
+};
 use bevy::prelude::*;
 pub struct RegionPurePlugin;
-
-pub struct TriggerRegionEvent(pub u64);
-
-pub struct ChangeEnemyHpEvent(pub u64, pub i64);
-
-#[derive(Debug)]
-pub struct ChangeRegionStatusEvent(pub u64, pub RegionStatus);
 
 use crate::{
     marks::{EnemyMark, EnemyStatus, RegionId, RegionStatus},
     pool::terrains::get_plane_orientation_pool,
 };
 
-use super::{Regions, manager::Tile};
+use super::{
+    manager::Tile, ChangeEnemyHpEvent, ChangeRegionStatusEvent, Regions, TriggerRegionEvent,
+};
 
 #[derive(Component)]
 pub struct RegionMark;
