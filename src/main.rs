@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::App, window::WindowDescriptor, DefaultPlugins};
 use que::GamePlugin;
 fn main() {
     App::new()

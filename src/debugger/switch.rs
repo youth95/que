@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::prelude::{Query, Visibility, With};
 use bevy_console::ConsoleCommand;
 
 use crate::marks::IDText;

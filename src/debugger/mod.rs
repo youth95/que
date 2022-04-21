@@ -2,7 +2,7 @@ mod camera;
 mod switch;
 mod trigger;
 
-use bevy::prelude::*;
+use bevy::prelude::{Plugin, App};
 use bevy_console::{AddConsoleCommand, ConsoleConfiguration, ConsolePlugin};
 
 use self::{
