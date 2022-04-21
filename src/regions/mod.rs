@@ -1,14 +1,16 @@
 pub mod events;
 mod manager;
 mod pure;
+mod region_entity_map;
 mod renderer;
 
-use bevy::prelude::Plugin;
-pub use pure::RegionMark;
 pub use self::events::{ChangeEnemyHpEvent, ChangeRegionStatusEvent, RegionClickEvent};
 pub use self::manager::Regions;
 use self::pure::RegionPurePlugin;
+pub use self::region_entity_map::{CurrentOverRegion, RegionEntityMap};
 use self::renderer::RegionRenderPlugin;
+use bevy::prelude::Plugin;
+pub use pure::RegionMark;
 
 pub struct RegionPlugin;
 

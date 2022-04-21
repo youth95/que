@@ -15,6 +15,7 @@ use crate::{
 use super::{
     events::{MouseOverEmpty, MouseOverRegionEvent, PlayAudioEvent},
     manager::Tile,
+    region_entity_map::{RegionEntityMap, CurrentOverRegion},
     ChangeEnemyHpEvent, ChangeRegionStatusEvent, RegionClickEvent, Regions,
 };
 
@@ -30,6 +31,8 @@ impl Plugin for RegionPurePlugin {
             .add_event::<MouseOverEmpty>()
             .add_event::<MouseOverRegionEvent>()
             .init_resource::<Regions>()
+            .init_resource::<RegionEntityMap>()
+            .init_resource::<CurrentOverRegion>()
             .add_startup_system(spawn_region_system)
             .add_system(atk_monster)
             .add_system(visit_region)
@@ -60,7 +63,11 @@ impl Monster {
     }
 }
 
-pub fn spawn_region_system(mut commands: Commands, mut regions: ResMut<Regions>) {
+pub fn spawn_region_system(
+    mut commands: Commands,
+    mut regions: ResMut<Regions>,
+    mut region_entity_map: ResMut<RegionEntityMap>,
+) {
     let plane_orientation_pool = get_plane_orientation_pool();
     let monsters_pool = get_monsters_pool();
     regions.random_generate_tiles(GEN_REGION_ITEMS, &plane_orientation_pool);
@@ -75,6 +82,7 @@ pub fn spawn_region_system(mut commands: Commands, mut regions: ResMut<Regions>)
             .insert(RegionId(region.id))
             .insert(region_status)
             .id();
+        region_entity_map.0.insert(region.id, entity);
         if let TileType::Room = region.to_tile_type() {
             let monster = monsters_pool.fetch_item();
             commands

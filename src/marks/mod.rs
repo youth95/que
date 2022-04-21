@@ -20,7 +20,7 @@ pub struct EnemyText;
 
 #[derive(Component)]
 pub struct EnemyMark;
-#[derive(Component,Clone)]
+#[derive(Component, Clone)]
 pub struct EnemyStatus {
     pub name: String,
     pub atk: i64,
@@ -29,7 +29,7 @@ pub struct EnemyStatus {
     pub cur_hp: i64,
 }
 
-#[derive(Component,Clone)]
+#[derive(Component, Clone)]
 pub struct EnemyLabel {
     pub name: String,
     pub intro: String,

@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 
 use crate::{
-    marks::{EnemyLabel, EnemyStatus, RegionId, RegionStatus},
+    marks::{EnemyLabel, EnemyStatus, RegionStatus},
     regions::{
         events::{MouseOverEmpty, MouseOverRegionEvent},
-        RegionMark,
+        CurrentOverRegion, RegionEntityMap, RegionMark,
     },
 };
 
@@ -13,9 +13,9 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_startup_system(setup)
-            // .add_system(text_update_system)
-            .add_system(update_intro_panel_content)
-            .add_system(intro_panel_visible)
+            .add_system(update_current_over_region_empty)
+            .add_system(update_current_over_region)
+            .add_system(update_intro_panel)
             .add_system(debug);
     }
 }
@@ -160,7 +160,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 },
                 ..default()
             },
-            color: Color::rgba_u8(0, 0, 0, 254).into(),
+            color: Color::rgba_u8(0, 0, 0, 224).into(),
             visibility: Visibility { is_visible: false },
             ..default()
         })
@@ -180,152 +180,152 @@ fn debug(query: Query<&Player, Changed<Player>>, mut query_text: Query<&mut Text
     }
 }
 
-fn intro_panel_visible(
+fn update_current_over_region(
     mut mouse_over_region: EventReader<MouseOverRegionEvent>,
-    mut mouse_over_empty: EventReader<MouseOverEmpty>,
-    region_query: Query<
-        (
-            &RegionStatus,
-            &RegionId,
-            Option<&EnemyLabel>,
-            Option<&EnemyStatus>,
-        ),
-        With<RegionMark>,
-    >,
-    mut query: Query<(Entity, &mut Visibility), With<IntroPanel>>,
+    region_query: Query<&RegionStatus, With<RegionMark>>,
+    region_entity_map: Res<RegionEntityMap>,
+    current_over_region: Res<CurrentOverRegion>,
     mut commands: Commands,
 ) {
     for MouseOverRegionEvent(id) in mouse_over_region.iter() {
-        region_query
-            .iter()
-            .for_each(|(status, RegionId(region_id), enemy_label, enemy_status)| {
-                if region_id == id {
-                    match status {
-                        RegionStatus::Found => {
-                            query.iter_mut().for_each(|(entity, mut visibility)| {
-                                if !visibility.is_visible {
-                                    visibility.is_visible = true;
-                                    if let Some(enemy_label) = enemy_label {
-                                        commands.entity(entity).insert(enemy_label.clone());
-                                    }
-                                    if let Some(enemy_status) = enemy_status {
-                                        commands.entity(entity).insert(enemy_status.clone());
-                                    }
-                                }
-                            });
+        if let Some(entity) = region_entity_map.0.get(&id) {
+            if let Ok(region_status) = region_query.get_component::<RegionStatus>(*entity) {
+                match region_status {
+                    RegionStatus::Found => match current_over_region.as_ref() {
+                        CurrentOverRegion::None => {
+                            commands.insert_resource(CurrentOverRegion::Region(*id));
                         }
-                        _ => {
-                            query.iter_mut().for_each(|(entity, mut visibility)| {
-                                if visibility.is_visible {
-                                    visibility.is_visible = false;
-                                }
-                            });
+                        CurrentOverRegion::Region(cur_id) => {
+                            if cur_id != id {
+                                commands.insert_resource(CurrentOverRegion::Region(*id));
+                            }
                         }
-                    };
+                    },
+                    _ => {
+                        commands.insert_resource(CurrentOverRegion::None);
+                    }
                 }
-            });
-    }
-    for _ in mouse_over_empty.iter() {
-        query.iter_mut().for_each(|(entity, mut visibility)| {
-            if visibility.is_visible {
-                visibility.is_visible = false;
             }
-        });
+        }
     }
 }
 
-fn update_intro_panel_content(
-    query: Query<
-        (
-            Entity,
-            &mut Visibility,
-            Option<&EnemyLabel>,
-            Option<&EnemyStatus>,
-        ),
-        (With<IntroPanel>, Changed<Visibility>),
-    >,
+fn update_current_over_region_empty(
+    mut mouse_over_empty: EventReader<MouseOverEmpty>,
     mut commands: Commands,
-    asset_server: ResMut<AssetServer>,
 ) {
-    for (entity, visibility, enemy_label, enemy_status) in query.iter() {
-        if visibility.is_visible {
-            if let Some(enemy_label) = enemy_label {
-                if let Some(enemy_status) = enemy_status {
-                    commands.entity(entity).with_children(|parent| {
-                        parent.spawn_bundle(NodeBundle {
-                            style: Style {
-                                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-                                ..default()
-                            },
-                            color: Color::NONE.into(),
-                            ..default()
-                        });
-                        let name_style = TextStyle {
-                            font: asset_server.load("fonts/hanti.ttf"),
-                            font_size: 18.0,
-                            color: Color::WHITE,
-                        };
-                        let atk_style = TextStyle {
-                            font: asset_server.load("fonts/hanti.ttf"),
-                            font_size: 24.0,
-                            color: Color::RED,
-                        };
-                        let def_style = TextStyle {
-                            font: asset_server.load("fonts/hanti.ttf"),
-                            font_size: 24.0,
-                            color: Color::BLUE,
-                        };
-                        parent.spawn_bundle(TextBundle {
-                            style: Style {
-                                position_type: PositionType::Relative,
+    for _ in mouse_over_empty.iter() {
+        commands.insert_resource(CurrentOverRegion::None);
+    }
+}
 
-                                ..Default::default()
-                            },
-                            text: Text {
-                                sections: vec![
-                                    TextSection {
-                                        value: enemy_label.name.clone(),
-                                        style: name_style.clone(),
-                                    },
-                                    TextSection {
-                                        value: format!("\n{}", enemy_label.intro),
-                                        style: name_style.clone(),
-                                    },
-                                    TextSection {
-                                        value: "\n攻: ".to_string(),
-                                        style: atk_style.clone(),
-                                    },
-                                    TextSection {
-                                        value: format!("{}", enemy_status.atk),
-                                        style: atk_style.clone(),
-                                    },
-                                    TextSection {
-                                        value: "    防: ".to_string(),
-                                        style: def_style.clone(),
-                                    },
-                                    TextSection {
-                                        value: format!("{}", enemy_status.def),
-                                        style: def_style.clone(),
-                                    },
-                                ],
-                                ..Default::default()
-                            },
-
-                            ..Default::default()
-                        });
-                        parent.spawn_bundle(ImageBundle {
-                            style: Style {
-                                // align_self: AlignSelf::Center,
-                                ..Default::default()
-                            },
-                            image: asset_server.load(&enemy_label.image_label).into(),
-                            ..Default::default()
-                        });
-                    });
+fn update_intro_panel(
+    mut panel_query: Query<(Entity, &mut Visibility), With<IntroPanel>>,
+    region_mark_query: Query<(&EnemyLabel, &EnemyStatus), With<RegionMark>>,
+    current_over_region: Res<CurrentOverRegion>,
+    region_entity_map: Res<RegionEntityMap>,
+    asset_server: ResMut<AssetServer>,
+    mut commands: Commands,
+) {
+    if current_over_region.is_changed() {
+        match current_over_region.into_inner() {
+            CurrentOverRegion::None => {
+                if let Ok((entity, mut panel_visible)) = panel_query.get_single_mut() {
+                    panel_visible.is_visible = false;
+                    commands.entity(entity).despawn_descendants();
                 }
             }
-        } else {
-            commands.entity(entity).despawn_descendants();
-        }
+            CurrentOverRegion::Region(region_id) => {
+                if let Ok((entity, mut panel_visible)) = panel_query.get_single_mut() {
+                    panel_visible.is_visible = false;
+                    if let Some(region_entity) = region_entity_map.0.get(&region_id) {
+                        if let Ok(enemy_label) =
+                            region_mark_query.get_component::<EnemyLabel>(*region_entity)
+                        {
+                            if let Ok(enemy_status) =
+                                region_mark_query.get_component::<EnemyStatus>(*region_entity)
+                            {
+                                panel_visible.is_visible = true;
+                                commands.entity(entity).despawn_descendants();
+                                commands.entity(entity).with_children(|parent| {
+                                    parent.spawn_bundle(NodeBundle {
+                                        style: Style {
+                                            size: Size::new(
+                                                Val::Percent(100.0),
+                                                Val::Percent(100.0),
+                                            ),
+                                            ..default()
+                                        },
+                                        color: Color::NONE.into(),
+                                        ..default()
+                                    });
+                                    let name_style = TextStyle {
+                                        font: asset_server.load("fonts/hanti.ttf"),
+                                        font_size: 18.0,
+                                        color: Color::WHITE,
+                                    };
+                                    let atk_style = TextStyle {
+                                        font: asset_server.load("fonts/hanti.ttf"),
+                                        font_size: 24.0,
+                                        color: Color::RED,
+                                    };
+                                    let def_style = TextStyle {
+                                        font: asset_server.load("fonts/hanti.ttf"),
+                                        font_size: 24.0,
+                                        color: Color::BLUE,
+                                    };
+                                    parent.spawn_bundle(TextBundle {
+                                        style: Style {
+                                            position_type: PositionType::Relative,
+
+                                            ..Default::default()
+                                        },
+                                        text: Text {
+                                            sections: vec![
+                                                TextSection {
+                                                    value: enemy_label.name.clone(),
+                                                    style: name_style.clone(),
+                                                },
+                                                TextSection {
+                                                    value: format!("\n{}", enemy_label.intro),
+                                                    style: name_style.clone(),
+                                                },
+                                                TextSection {
+                                                    value: "\n攻: ".to_string(),
+                                                    style: atk_style.clone(),
+                                                },
+                                                TextSection {
+                                                    value: format!("{}", enemy_status.atk),
+                                                    style: atk_style.clone(),
+                                                },
+                                                TextSection {
+                                                    value: "    防: ".to_string(),
+                                                    style: def_style.clone(),
+                                                },
+                                                TextSection {
+                                                    value: format!("{}", enemy_status.def),
+                                                    style: def_style.clone(),
+                                                },
+                                            ],
+                                            ..Default::default()
+                                        },
+
+                                        ..Default::default()
+                                    });
+                                    parent.spawn_bundle(ImageBundle {
+                                        style: Style {
+                                            // align_self: AlignSelf::Center,
+                                            ..Default::default()
+                                        },
+                                        image: asset_server.load(&enemy_label.image_label).into(),
+                                        ..Default::default()
+                                    });
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        };
     }
 }
