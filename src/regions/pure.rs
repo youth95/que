@@ -12,8 +12,9 @@ use crate::{
 };
 
 use super::{
-    events::{PlayAudioEvent, MouseOverEmpty, MouseOverRegionEvent}, manager::Tile, ChangeEnemyHpEvent, ChangeRegionStatusEvent,
-    RegionClickEvent, Regions,
+    events::{MouseOverEmpty, MouseOverRegionEvent, PlayAudioEvent},
+    manager::Tile,
+    ChangeEnemyHpEvent, ChangeRegionStatusEvent, RegionClickEvent, Regions,
 };
 
 #[derive(Component)]
@@ -53,7 +54,14 @@ pub fn spawn_region_system(mut commands: Commands, mut regions: ResMut<Regions>)
             .insert(region_status)
             .id();
         if let TileType::Room = region.to_tile_type() {
-            commands.entity(entity).insert(EnemyMark);
+            commands
+                .entity(entity)
+                .insert(EnemyStatus {
+                    name: "怪".to_string(),
+                    max_hp: 20,
+                    cur_hp: 20,
+                })
+                .insert(EnemyMark);
         }
     }
 }
@@ -116,11 +124,9 @@ pub fn change_region_status_system(
     mut change_region_status_event: EventReader<ChangeRegionStatusEvent>,
     regions: ResMut<Regions>,
     mut sprite_query: Query<(Entity, &RegionId, &RegionStatus), With<RegionMark>>,
-    mut hp_text_query: Query<
-        (&mut Visibility, &RegionId),
-        (With<EnemyStatus>, With<EnemyText>, Without<HPColor>),
-    >,
+    mut hp_text_query: Query<(&mut Visibility, &RegionId), (With<EnemyText>, Without<HPColor>)>,
     mut hp_text_color_query: Query<(&mut Visibility, &RegionId), With<HPColor>>,
+
     mut play_audio_event: EventWriter<PlayAudioEvent>,
 ) {
     let mut found_tiles = Vec::<&Tile>::new();
@@ -159,6 +165,7 @@ pub fn change_region_status_system(
         for tile_id in tile.adjacent.clone().into_iter() {
             for (mut visibility, RegionId(region_id), ..) in hp_text_query.iter_mut() {
                 if tile_id == *region_id {
+                    info!("{} {}", tile_id, *region_id);
                     visibility.is_visible = true;
                 }
             }

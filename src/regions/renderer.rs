@@ -22,6 +22,7 @@ impl Plugin for RegionRenderPlugin {
         app.add_system(play_audio_system)
             .add_system(spawn_region_rect)
             .add_system(mouse_interaction)
+            .add_system(fill_enemy_text_system)
             .add_system(update_enemy_hp_text_system)
             .add_system(region_rect_color_system);
     }
@@ -80,11 +81,6 @@ fn spawn_region_rect(
                         },
                         ..Default::default()
                     })
-                    .insert(EnemyStatus {
-                        name: "怪".to_string(),
-                        max_hp: 20,
-                        cur_hp: 20,
-                    })
                     .insert(EnemyText)
                     .insert(region_id);
             }
@@ -92,13 +88,10 @@ fn spawn_region_rect(
     }
 }
 
-fn update_enemy_hp_text_system(
+fn fill_enemy_text_system(
     asset_server: Res<AssetServer>,
-    mut query: Query<
-        (&mut Text, &mut EnemyStatus, &RegionId),
-        (Changed<EnemyStatus>, With<EnemyText>),
-    >,
-    mut query_color: Query<(&mut Sprite, &RegionId), With<HPColor>>,
+    mut query: Query<(&mut Text, &RegionId), Added<EnemyText>>,
+    query_enemy: Query<(&EnemyStatus, &RegionId)>,
 ) {
     let font = asset_server.load("fonts/hanti.ttf");
     let text_style = TextStyle {
@@ -110,16 +103,37 @@ fn update_enemy_hp_text_system(
         vertical: VerticalAlign::Center,
         horizontal: HorizontalAlign::Center,
     };
-    for (mut text, enemy, RegionId(id)) in &mut query.iter_mut() {
-        text.set(Box::new(Text::with_section(
-            format!("{}\n{}/{}", enemy.name, enemy.cur_hp, enemy.max_hp),
-            text_style.clone(),
-            text_alignment,
-        )))
-        .unwrap();
-        for (mut sp, RegionId(region_id)) in &mut query_color.iter_mut() {
-            if region_id == id {
-                sp.color.set_a(enemy.cur_hp as f32 / enemy.max_hp as f32);
+    for (mut text, RegionId(id)) in &mut query.iter_mut() {
+        for (enemy, RegionId(region_id)) in &mut query_enemy.iter() {
+            if id == region_id {
+                text.set(Box::new(Text::with_section(
+                    format!("{}\n{}/{}", enemy.name, enemy.cur_hp, enemy.max_hp),
+                    text_style.clone(),
+                    text_alignment,
+                )))
+                .unwrap();
+            }
+        }
+    }
+}
+
+fn update_enemy_hp_text_system(
+    mut query: Query<(&mut Text, &RegionId), With<EnemyText>>,
+    query_enemy: Query<(&EnemyStatus, &RegionId), Changed<EnemyStatus>>,
+    mut query_color: Query<(&mut Sprite, &RegionId), With<HPColor>>,
+) {
+    for (enemy, RegionId(region_id)) in &mut query_enemy.iter() {
+        for (mut text, RegionId(id)) in &mut query.iter_mut() {
+            if id == region_id {
+                if text.sections.len() != 0 {
+                    text.sections[0].value =
+                        format!("{}\n{}/{}", enemy.name, enemy.cur_hp, enemy.max_hp);
+                }
+                for (mut sp, RegionId(region_id)) in &mut query_color.iter_mut() {
+                    if region_id == id {
+                        sp.color.set_a(enemy.cur_hp as f32 / enemy.max_hp as f32);
+                    }
+                }
             }
         }
     }
