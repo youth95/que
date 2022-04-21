@@ -16,16 +16,16 @@ pub struct IDText;
 pub struct Player;
 
 #[derive(Component, Clone)]
-pub struct Enemy {
-    pub name: String,
-    pub max_hp: u64,
-    pub cur_hp: i64,
-}
+pub struct EnemyText;
 
 #[derive(Component)]
 pub struct EnemyMark;
 #[derive(Component)]
-pub struct HPText;
+pub struct EnemyStatus {
+    pub name: String,
+    pub max_hp: u64,
+    pub cur_hp: i64,
+}
 
 #[derive(Component)]
 pub struct HPColor;
@@ -33,7 +33,7 @@ pub struct HPColor;
 #[derive(Component)]
 pub struct NPC;
 
-#[derive(Component, Clone, Copy, PartialEq)]
+#[derive(Component, Clone, Copy, PartialEq, Debug)]
 pub enum RegionStatus {
     Found,
     Visited,

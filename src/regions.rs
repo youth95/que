@@ -1,12 +1,15 @@
 use std::borrow::BorrowMut;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::iter::FromIterator;
 
 use crate::components::TileType;
-use crate::marks::{Enemy, EnemyMark, HPColor, HPText, IDText, RegionId, RegionRect, RegionStatus};
+use crate::marks::{
+    EnemyMark, EnemyStatus, EnemyText, HPColor, RegionId, RegionRect, RegionStatus,
+};
 use crate::pool::Pool;
 use bevy::math::Vec3;
 use bevy::prelude::Transform;
+use bevy::utils::HashSet;
 use bevy_kira_audio::Audio;
 
 use super::pool::terrains::{AxisDirection, PlaneOrientation, Point};
@@ -178,38 +181,49 @@ const GAP: f32 = 4.;
 
 const GEN_REGION_ITEMS: u64 = 32 * 32;
 
-pub fn spawn_tiles_sprite_system(mut commands: Commands, mut regions: ResMut<Regions>) {
+#[derive(Component)]
+pub struct RegionMark;
+
+pub fn spawn_region_system(mut commands: Commands, mut regions: ResMut<Regions>) {
     let pool: Pool<Vec<PlaneOrientation>> = get_plane_orientation_pool();
     regions.random_generate_tiles(GEN_REGION_ITEMS, &pool);
-    for (_, tile) in regions.tiles.iter() {
-        let transform = tile.to_transform(SIZE, GAP).unwrap();
-        let region_id = RegionId(tile.id);
-        let tile_type = tile.to_tile_type();
-        let region_status: RegionStatus = match tile_type {
+    for (_, region) in regions.tiles.iter() {
+        let region_status: RegionStatus = match region.to_tile_type() {
             TileType::Started => RegionStatus::Found,
             _ => RegionStatus::Mist,
         };
+        let entity = commands
+            .spawn()
+            .insert(RegionMark)
+            .insert(RegionId(region.id))
+            .insert(region_status)
+            .id();
+        if let TileType::Room = region.to_tile_type() {
+            commands.entity(entity).insert(EnemyMark);
+        }
+    }
+}
 
-        match tile_type {
-            TileType::Room => {
-                let enemy = Enemy {
-                    name: "怪".to_string(),
-                    max_hp: 20,
-                    cur_hp: 20,
-                };
-                commands
-                    .spawn()
-                    .insert_bundle(SpriteBundle::default())
-                    .insert(transform)
-                    .insert(Sprite {
-                        color: Color::BLUE,
-                        ..Default::default()
-                    })
-                    .insert(region_status)
-                    .insert(RegionRect)
-                    .insert(EnemyMark)
-                    .insert(region_id);
-                // hp_color
+pub fn spawn_region_rect(
+    mut commands: Commands,
+    regions: ResMut<Regions>,
+    query: Query<(&RegionId, Option<&EnemyMark>), Added<RegionMark>>,
+) {
+    for (RegionId(region_id), enemy_mark) in query.iter() {
+        if let Some(tile) = regions.tiles.get(region_id) {
+            let transform = tile.to_transform(SIZE, GAP).unwrap();
+            let region_id = RegionId(tile.id);
+
+            // region rect
+            commands
+                .spawn()
+                .insert_bundle(SpriteBundle::default())
+                .insert(transform)
+                .insert(RegionRect)
+                .insert(region_id);
+
+            if enemy_mark.is_some() {
+                //  enemy hp color
                 commands
                     .spawn()
                     .insert_bundle(SpriteBundle::default())
@@ -229,7 +243,7 @@ pub fn spawn_tiles_sprite_system(mut commands: Commands, mut regions: ResMut<Reg
                     .insert(HPColor)
                     .insert(Visibility { is_visible: false })
                     .insert(region_id);
-                // current_hp
+                // enemy current_hp_text
                 commands
                     .spawn_bundle(Text2dBundle {
                         visibility: Visibility { is_visible: false },
@@ -243,43 +257,15 @@ pub fn spawn_tiles_sprite_system(mut commands: Commands, mut regions: ResMut<Reg
                         },
                         ..Default::default()
                     })
-                    .insert(HPText)
-                    .insert(EnemyMark)
-                    .insert(region_id.clone())
-                    .insert(enemy);
-            }
-            _ => {
-                commands
-                    .spawn()
-                    .insert_bundle(SpriteBundle::default())
-                    .insert(transform)
-                    .insert(Sprite {
-                        color: Color::BLUE,
-                        ..Default::default()
+                    .insert(EnemyStatus {
+                        name: "怪".to_string(),
+                        max_hp: 20,
+                        cur_hp: 20,
                     })
-                    .insert(region_status)
-                    .insert(RegionRect)
+                    .insert(EnemyText)
                     .insert(region_id);
             }
         }
-
-        // id
-        // commands
-        //     .spawn_bundle(Text2dBundle {
-        //         text: Text::with_section(
-        //             format!("{}", tile.id),
-        //             text_style.clone(),
-        //             text_alignment,
-        //         ),
-        //         visibility: Visibility { is_visible: false },
-        //         transform: Transform {
-        //             translation: Vec3::new(transform.translation.x, transform.translation.y, 1.),
-        //             ..Default::default()
-        //         },
-        //         ..Default::default()
-        //     })
-        //     .insert(IDText)
-        //     .insert(region_id.clone());
     }
 }
 
@@ -287,10 +273,11 @@ pub struct TriggerRegionEvent(pub u64);
 
 pub struct ChangeEnemyHpEvent(pub u64, pub i64);
 
+#[derive(Debug)]
 pub struct ChangeRegionStatusEvent(pub u64, pub RegionStatus);
 
 pub fn atk_monster(
-    query: Query<(&RegionId, &RegionStatus), (With<RegionRect>, With<EnemyMark>)>,
+    query: Query<(&RegionId, &RegionStatus), With<EnemyMark>>,
     mut trigger_region_event: EventReader<TriggerRegionEvent>,
     mut change_enemy_hp_event: EventWriter<ChangeEnemyHpEvent>,
     asset_server: Res<AssetServer>,
@@ -310,7 +297,7 @@ pub fn atk_monster(
 }
 
 pub fn visit_region(
-    query: Query<(&RegionId, &RegionStatus), (With<RegionRect>, Without<EnemyMark>)>,
+    query: Query<(&RegionId, &RegionStatus), Without<EnemyMark>>,
     mut trigger_region_event: EventReader<TriggerRegionEvent>,
     mut change_region_status_event: EventWriter<ChangeRegionStatusEvent>,
 ) {
@@ -325,7 +312,7 @@ pub fn visit_region(
 }
 
 pub fn update_enemy_hp_system(
-    mut query: Query<(&mut Enemy, &RegionId)>,
+    mut query: Query<(&mut EnemyStatus, &RegionId)>,
     mut change_enemy_hp_event: EventReader<ChangeEnemyHpEvent>,
     mut change_region_status_event: EventWriter<ChangeRegionStatusEvent>,
 ) {
@@ -344,7 +331,10 @@ pub fn update_enemy_hp_system(
 
 pub fn update_enemy_hp_text_system(
     asset_server: Res<AssetServer>,
-    mut query: Query<(&mut Text, &mut Enemy, &RegionId), (Changed<Enemy>, With<HPText>)>,
+    mut query: Query<
+        (&mut Text, &mut EnemyStatus, &RegionId),
+        (Changed<EnemyStatus>, With<EnemyText>),
+    >,
     mut query_color: Query<(&mut Sprite, &RegionId), With<HPColor>>,
 ) {
     let font = asset_server.load("fonts/hanti.ttf");
@@ -376,10 +366,10 @@ pub fn change_region_status_system(
     mut commands: Commands,
     mut change_region_status_event: EventReader<ChangeRegionStatusEvent>,
     regions: ResMut<Regions>,
-    mut sprite_query: Query<(Entity, &RegionId, &RegionStatus), With<RegionRect>>,
+    mut sprite_query: Query<(Entity, &RegionId, &RegionStatus), With<RegionMark>>,
     mut hp_text_query: Query<
         (&mut Visibility, &RegionId),
-        (With<Enemy>, With<HPText>, Without<HPColor>),
+        (With<EnemyStatus>, With<EnemyText>, Without<HPColor>),
     >,
     mut hp_text_color_query: Query<(&mut Visibility, &RegionId), With<HPColor>>,
     asset_server: Res<AssetServer>,
@@ -439,18 +429,23 @@ pub fn change_region_status_system(
 }
 
 pub fn region_rect_color_system(
-    mut region_react_query: Query<(&mut Sprite, &RegionStatus), With<RegionRect>>,
+    region_status_query: Query<(&RegionId, &RegionStatus)>,
+    mut region_react_query: Query<(&mut Sprite, &RegionId), With<RegionRect>>,
 ) {
-    for (mut sprite, status) in region_react_query.iter_mut() {
-        match status {
-            RegionStatus::Mist => {
-                sprite.color = Color::BLACK;
-            }
-            RegionStatus::Found => {
-                sprite.color = Color::GREEN;
-            }
-            RegionStatus::Visited => {
-                sprite.color = Color::GRAY;
+    for (RegionId(region_id), region_status) in region_status_query.iter() {
+        for (mut sprite, RegionId(id)) in region_react_query.iter_mut() {
+            if region_id == id {
+                match region_status {
+                    RegionStatus::Mist => {
+                        sprite.color = Color::BLACK;
+                    }
+                    RegionStatus::Found => {
+                        sprite.color = Color::GREEN;
+                    }
+                    RegionStatus::Visited => {
+                        sprite.color = Color::GRAY;
+                    }
+                }
             }
         }
     }

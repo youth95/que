@@ -15,10 +15,10 @@ use bevy_kira_audio::AudioPlugin;
 pub use camera::CameraPlugin;
 pub use debugger::DebuggerPlugin;
 use regions::{
-    atk_monster, mouse_interaction, region_rect_color_system, spawn_tiles_sprite_system,
-    update_enemy_hp_system,
-    change_region_status_system, update_enemy_hp_text_system, visit_region, ChangeEnemyHpEvent,
-    ChangeRegionStatusEvent, Regions, TriggerRegionEvent,
+    atk_monster, change_region_status_system, mouse_interaction, region_rect_color_system,
+    spawn_region_rect, spawn_region_system, update_enemy_hp_system,
+    update_enemy_hp_text_system, visit_region, ChangeEnemyHpEvent, ChangeRegionStatusEvent,
+    Regions, TriggerRegionEvent,
 };
 
 pub struct GamePlugin;
@@ -32,7 +32,8 @@ impl Plugin for GamePlugin {
             .add_event::<ChangeEnemyHpEvent>()
             .add_event::<ChangeRegionStatusEvent>()
             .init_resource::<Regions>()
-            .add_startup_system(spawn_tiles_sprite_system)
+            .add_startup_system(spawn_region_system)
+            .add_system(spawn_region_rect)
             .add_system(mouse_interaction)
             .add_system(atk_monster)
             .add_system(visit_region)
