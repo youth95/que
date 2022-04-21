@@ -18,9 +18,8 @@ version = "0.7.0"
 # These are the remaining default features other than `bevy_audio` and `mp3`
 features = [
   "render",
-  "bevy_winit", # "bevy_gilrs",  # "png",
-  # "hdr",
-  # "filesystem_watcher",
+  "bevy_winit", # "bevy_gilrs", 
+  "png", # "hdr",  # "filesystem_watcher",
   # "x11"
 ]
 
@@ -30,8 +29,6 @@ version = "0.9.0"
 default-features = false
 # enable the features you care about
 features = [
-  "wav",
-  # "flac",
-  "mp3",
-  # "ogg",
+  "wav", # "flac",
+  "mp3", # "ogg",
 ]

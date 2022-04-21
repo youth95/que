@@ -1,7 +1,8 @@
 use crate::{
     components::TileType,
-    marks::{EnemyText, HPColor},
+    marks::{EnemyLabel, EnemyText, HPColor},
     player::Player,
+    pool::monsters::{get_monsters_pool, Monster},
 };
 use bevy::prelude::*;
 pub struct RegionPurePlugin;
@@ -39,9 +40,30 @@ impl Plugin for RegionPurePlugin {
 
 const GEN_REGION_ITEMS: u64 = 32 * 32;
 
+impl Monster {
+    pub fn to_enemy_status(&self) -> EnemyStatus {
+        EnemyStatus {
+            name: self.name.clone(),
+            atk: self.atk,
+            def: self.def,
+            max_hp: self.hp,
+            cur_hp: self.hp as i64,
+        }
+    }
+
+    pub fn to_enemy_label(&self) -> EnemyLabel {
+        EnemyLabel {
+            name: self.name.clone(),
+            intro: self.intro.clone(),
+            image_label: self.image_label.clone(),
+        }
+    }
+}
+
 pub fn spawn_region_system(mut commands: Commands, mut regions: ResMut<Regions>) {
-    let pool = get_plane_orientation_pool();
-    regions.random_generate_tiles(GEN_REGION_ITEMS, &pool);
+    let plane_orientation_pool = get_plane_orientation_pool();
+    let monsters_pool = get_monsters_pool();
+    regions.random_generate_tiles(GEN_REGION_ITEMS, &plane_orientation_pool);
     for (_, region) in regions.tiles.iter() {
         let region_status: RegionStatus = match region.to_tile_type() {
             TileType::Started => RegionStatus::Found,
@@ -54,15 +76,11 @@ pub fn spawn_region_system(mut commands: Commands, mut regions: ResMut<Regions>)
             .insert(region_status)
             .id();
         if let TileType::Room = region.to_tile_type() {
+            let monster = monsters_pool.fetch_item();
             commands
                 .entity(entity)
-                .insert(EnemyStatus {
-                    name: "怪".to_string(),
-                    max_hp: 20,
-                    cur_hp: 20,
-                    atk: 3,
-                    def: 1,
-                })
+                .insert(monster.to_enemy_status())
+                .insert(monster.to_enemy_label())
                 .insert(EnemyMark);
         }
     }
@@ -170,7 +188,6 @@ pub fn change_region_status_system(
         for tile_id in tile.adjacent.clone().into_iter() {
             for (mut visibility, RegionId(region_id), ..) in hp_text_query.iter_mut() {
                 if tile_id == *region_id {
-                    info!("{} {}", tile_id, *region_id);
                     visibility.is_visible = true;
                 }
             }

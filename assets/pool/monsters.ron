@@ -1,0 +1,34 @@
+([
+  ((
+    name: "狌",
+    image_label: "textures/monsters/m0.png",
+    intro: "一种长着人脸的野兽\n知晓往事却不知未来\n白色的耳朵\n可以匍匐\n也可直立行走",
+    hp: 10,
+    atk: 2,
+    def: 4,
+  ),4),
+  ((
+    name: "訑",
+    image_label: "textures/monsters/m1.png",
+    intro: "未知",
+    hp: 20,
+    atk: 4,
+    def: 4,
+  ),3),
+  ((
+    name: "付",
+    image_label: "textures/monsters/m2.png",
+    intro: "未知",
+    hp: 30,
+    atk: 6,
+    def: 4,
+  ),2),
+  ((
+    name: "灌",
+    image_label: "textures/monsters/m3.png",
+    intro: "未知",
+    hp: 40,
+    atk: 8,
+    def: 4,
+  ),1),
+])
