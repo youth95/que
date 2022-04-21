@@ -14,7 +14,7 @@ serde = {version = "1", features = ["derive"]}
 
 [dependencies.bevy]
 default-features = false
-version = "0.6.1"
+version = "0.7.0"
 # These are the remaining default features other than `bevy_audio` and `mp3`
 features = [
   "render",
@@ -25,7 +25,7 @@ features = [
 ]
 
 [dependencies.bevy_kira_audio]
-version = "0.8.0"
+version = "0.9.0"
 # `ogg` format support is enabled by default, disable if you don't want it
 default-features = false
 # enable the features you care about

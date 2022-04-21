@@ -12,7 +12,7 @@ use crate::{
 };
 
 use super::{
-    events::PlayAudioEvent, manager::Tile, ChangeEnemyHpEvent, ChangeRegionStatusEvent,
+    events::{PlayAudioEvent, MouseOverEmpty, MouseOverRegionEvent}, manager::Tile, ChangeEnemyHpEvent, ChangeRegionStatusEvent,
     RegionClickEvent, Regions,
 };
 
@@ -25,6 +25,8 @@ impl Plugin for RegionPurePlugin {
             .add_event::<PlayAudioEvent>()
             .add_event::<ChangeEnemyHpEvent>()
             .add_event::<ChangeRegionStatusEvent>()
+            .add_event::<MouseOverEmpty>()
+            .add_event::<MouseOverRegionEvent>()
             .init_resource::<Regions>()
             .add_startup_system(spawn_region_system)
             .add_system(atk_monster)

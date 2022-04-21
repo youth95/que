@@ -1,10 +1,10 @@
-mod events;
+pub mod events;
 mod manager;
 mod pure;
 mod renderer;
 
 use bevy::prelude::Plugin;
-
+pub use pure::RegionMark;
 pub use self::events::{ChangeEnemyHpEvent, ChangeRegionStatusEvent, RegionClickEvent};
 pub use self::manager::Regions;
 use self::pure::RegionPurePlugin;
