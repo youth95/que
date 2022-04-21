@@ -11,7 +11,8 @@ use crate::{
 };
 
 use super::{
-    manager::Tile, ChangeEnemyHpEvent, ChangeRegionStatusEvent, Regions, TriggerRegionEvent,
+    events::PlayAudioEvent, manager::Tile, ChangeEnemyHpEvent, ChangeRegionStatusEvent,
+    RegionClickEvent, Regions,
 };
 
 #[derive(Component)]
@@ -19,7 +20,8 @@ pub struct RegionMark;
 
 impl Plugin for RegionPurePlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<TriggerRegionEvent>()
+        app.add_event::<RegionClickEvent>()
+            .add_event::<PlayAudioEvent>()
             .add_event::<ChangeEnemyHpEvent>()
             .add_event::<ChangeRegionStatusEvent>()
             .init_resource::<Regions>()
@@ -55,18 +57,16 @@ pub fn spawn_region_system(mut commands: Commands, mut regions: ResMut<Regions>)
 
 pub fn atk_monster(
     query: Query<(&RegionId, &RegionStatus), With<EnemyMark>>,
-    mut trigger_region_event: EventReader<TriggerRegionEvent>,
+    mut trigger_region_event: EventReader<RegionClickEvent>,
     mut change_enemy_hp_event: EventWriter<ChangeEnemyHpEvent>,
-    // asset_server: Res<AssetServer>,
-    // audio: Res<Audio>,
+    mut play_audio_event: EventWriter<PlayAudioEvent>,
 ) {
-    for TriggerRegionEvent(id) in trigger_region_event.iter() {
+    for RegionClickEvent(id) in trigger_region_event.iter() {
         for (RegionId(region_id), region_status) in query.iter() {
             if region_id == id {
                 if *region_status == RegionStatus::Found {
                     change_enemy_hp_event.send(ChangeEnemyHpEvent(*id, -2));
-                    // audio.pause();
-                    // audio.play(asset_server.load("sounds/dao5.mp3"));
+                    play_audio_event.send(PlayAudioEvent("sounds/dao5.mp3".to_string()));
                 }
             }
         }
@@ -75,10 +75,10 @@ pub fn atk_monster(
 
 pub fn visit_region(
     query: Query<(&RegionId, &RegionStatus), Without<EnemyMark>>,
-    mut trigger_region_event: EventReader<TriggerRegionEvent>,
+    mut trigger_region_event: EventReader<RegionClickEvent>,
     mut change_region_status_event: EventWriter<ChangeRegionStatusEvent>,
 ) {
-    for TriggerRegionEvent(id) in trigger_region_event.iter() {
+    for RegionClickEvent(id) in trigger_region_event.iter() {
         for (RegionId(region_id), region_status) in query.iter() {
             if region_id == id && *region_status == RegionStatus::Found {
                 change_region_status_event
@@ -116,8 +116,7 @@ pub fn change_region_status_system(
         (With<EnemyStatus>, With<EnemyText>, Without<HPColor>),
     >,
     mut hp_text_color_query: Query<(&mut Visibility, &RegionId), With<HPColor>>,
-    // asset_server: Res<AssetServer>,
-    // audio: Res<Audio>,
+    mut play_audio_event: EventWriter<PlayAudioEvent>,
 ) {
     let mut found_tiles = Vec::<&Tile>::new();
     for ev in change_region_status_event.iter() {
@@ -127,7 +126,7 @@ pub fn change_region_status_system(
                 RegionStatus::Found => {
                     if region_id == entity {
                         commands.entity(en).insert(RegionStatus::Visited);
-                        // audio.play(asset_server.load("sounds/click.wav"));
+                        play_audio_event.send(PlayAudioEvent("sounds/click.wav".to_string()));
                         if let Some(tile) = regions.tiles.get(region_id) {
                             found_tiles.push(&tile);
                         }

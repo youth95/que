@@ -1,8 +1,10 @@
 use bevy::prelude::*;
+use bevy_kira_audio::Audio;
 
 use crate::marks::{EnemyMark, RegionId, RegionRect};
 
-use super::TriggerRegionEvent;
+use super::events::PlayAudioEvent;
+use super::RegionClickEvent;
 use super::{pure::RegionMark, Regions};
 
 use crate::marks::{EnemyStatus, EnemyText, HPColor, RegionStatus};
@@ -16,14 +18,15 @@ const GAP: f32 = 4.;
 
 impl Plugin for RegionRenderPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_system(spawn_region_rect)
+        app.add_system(play_audio_system)
+            .add_system(spawn_region_rect)
             .add_system(mouse_interaction)
             .add_system(update_enemy_hp_text_system)
             .add_system(region_rect_color_system);
     }
 }
 
-pub fn spawn_region_rect(
+fn spawn_region_rect(
     mut commands: Commands,
     regions: ResMut<Regions>,
     query: Query<(&RegionId, Option<&EnemyMark>), Added<RegionMark>>,
@@ -88,7 +91,7 @@ pub fn spawn_region_rect(
     }
 }
 
-pub fn update_enemy_hp_text_system(
+fn update_enemy_hp_text_system(
     asset_server: Res<AssetServer>,
     mut query: Query<
         (&mut Text, &mut EnemyStatus, &RegionId),
@@ -121,7 +124,7 @@ pub fn update_enemy_hp_text_system(
     }
 }
 
-pub fn region_rect_color_system(
+fn region_rect_color_system(
     region_status_query: Query<(&RegionId, &RegionStatus)>,
     mut region_react_query: Query<(&mut Sprite, &RegionId), With<RegionRect>>,
 ) {
@@ -144,10 +147,10 @@ pub fn region_rect_color_system(
     }
 }
 
-pub fn mouse_interaction(
+fn mouse_interaction(
     windows: Res<Windows>,
     buttons: Res<Input<MouseButton>>,
-    mut trigger_region_event: EventWriter<TriggerRegionEvent>,
+    mut trigger_region_event: EventWriter<RegionClickEvent>,
     q_camera: Query<&Transform, With<Camera>>,
     q_regions: Query<(&RegionId, &Transform), With<Sprite>>,
 ) {
@@ -163,11 +166,22 @@ pub fn mouse_interaction(
                         let dx = (pos_wld.x - region.translation.x).abs();
                         let dy = (pos_wld.y - region.translation.y).abs();
                         if dx <= region.scale.x / 2. && dy <= region.scale.y / 2. {
-                            trigger_region_event.send(TriggerRegionEvent(*id));
+                            trigger_region_event.send(RegionClickEvent(*id));
                         }
                     }
                 }
             }
         }
+    }
+}
+
+fn play_audio_system(
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
+    mut play_audio_event: EventReader<PlayAudioEvent>,
+) {
+    for PlayAudioEvent(path) in play_audio_event.iter() {
+        let sound = asset_server.load(path);
+        audio.play(sound);
     }
 }

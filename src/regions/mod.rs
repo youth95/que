@@ -5,7 +5,7 @@ mod renderer;
 
 use bevy::prelude::Plugin;
 
-pub use self::events::{ChangeEnemyHpEvent, ChangeRegionStatusEvent, TriggerRegionEvent};
+pub use self::events::{ChangeEnemyHpEvent, ChangeRegionStatusEvent, RegionClickEvent};
 pub use self::manager::Regions;
 use self::pure::RegionPurePlugin;
 use self::renderer::RegionRenderPlugin;
