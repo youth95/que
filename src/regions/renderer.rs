@@ -3,6 +3,7 @@ use bevy_kira_audio::Audio;
 
 use crate::camera::SceneCamera;
 use crate::marks::{EnemyMark, RegionId, RegionRect};
+use crate::{AudioAssets, GameStage};
 
 use super::events::{MouseOverEmpty, MouseOverRegionEvent, PlayAudioEvent};
 use super::RegionClickEvent;
@@ -19,12 +20,15 @@ const GAP: f32 = 4.;
 
 impl Plugin for RegionRenderPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_system(play_audio_system)
-            .add_system(spawn_region_rect)
-            .add_system(mouse_interaction)
-            .add_system(fill_enemy_text_system)
-            .add_system(update_enemy_hp_text_system)
-            .add_system(region_rect_color_system);
+        app.add_system_set(
+            SystemSet::on_update(GameStage::Main)
+                .with_system(play_audio_system)
+                .with_system(spawn_region_rect)
+                .with_system(mouse_interaction)
+                .with_system(fill_enemy_text_system)
+                .with_system(update_enemy_hp_text_system)
+                .with_system(region_rect_color_system),
+        );
     }
 }
 
@@ -204,12 +208,15 @@ fn mouse_interaction(
 }
 
 fn play_audio_system(
-    asset_server: Res<AssetServer>,
     audio: Res<Audio>,
+    audio_assets: Res<AudioAssets>,
     mut play_audio_event: EventReader<PlayAudioEvent>,
 ) {
     for PlayAudioEvent(path) in play_audio_event.iter() {
-        let sound = asset_server.load(path);
+        let sound = match path {
+            super::events::AudioSound::Click => audio_assets.click.clone(),
+            super::events::AudioSound::Dao5 => audio_assets.dao5.clone(),
+        };
         audio.play(sound);
     }
 }

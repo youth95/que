@@ -9,7 +9,12 @@ pub struct MouseOverRegionEvent(pub u64);
 pub struct MouseOverEmpty;
 
 // 音效播放事件
-pub struct PlayAudioEvent(pub String);
+pub struct PlayAudioEvent(pub AudioSound);
+
+pub enum AudioSound {
+  Click,
+  Dao5,
+}
 
 // 敌人血量变化事件
 pub struct ChangeEnemyHpEvent(pub u64, pub i64);

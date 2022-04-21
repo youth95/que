@@ -6,6 +6,7 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bevy_asset_loader = "0.10"
 bevy_console = "0.3.0"
 lazy_static = "1.4.0"
 rand = "0.8.5"
@@ -19,8 +20,7 @@ version = "0.7.0"
 features = [
   "render",
   "bevy_winit", # "bevy_gilrs", 
-  "png", # "hdr",  # "filesystem_watcher",
-  # "x11"
+  "png", # "hdr",  # "filesystem_watcher",  # "x11"
 ]
 
 [dependencies.bevy_kira_audio]

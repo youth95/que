@@ -1,22 +1,27 @@
 use bevy::prelude::*;
 
 use crate::{
+    assets::MonsterImageAssets,
     marks::{EnemyLabel, EnemyStatus, RegionStatus},
     regions::{
         events::{MouseOverEmpty, MouseOverRegionEvent},
         CurrentOverRegion, RegionEntityMap, RegionMark,
     },
+    GameStage,
 };
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_startup_system(setup)
-            .add_system(update_current_over_region_empty)
-            .add_system(update_current_over_region)
-            .add_system(update_intro_panel)
-            .add_system(debug);
+        app.add_system_set(SystemSet::on_enter(GameStage::Main).with_system(setup))
+            .add_system_set(
+                SystemSet::on_update(GameStage::Main)
+                    .with_system(update_current_over_region_empty)
+                    .with_system(update_current_over_region)
+                    .with_system(update_intro_panel)
+                    .with_system(debug),
+            );
     }
 }
 
@@ -201,9 +206,12 @@ fn update_current_over_region(
                             }
                         }
                     },
-                    _ => {
-                        commands.insert_resource(CurrentOverRegion::None);
-                    }
+                    _ => match current_over_region.as_ref() {
+                        CurrentOverRegion::Region(_) => {
+                            commands.insert_resource(CurrentOverRegion::None);
+                        }
+                        _ => {}
+                    },
                 }
             }
         }
@@ -211,11 +219,18 @@ fn update_current_over_region(
 }
 
 fn update_current_over_region_empty(
+    current_over_region: Res<CurrentOverRegion>,
+
     mut mouse_over_empty: EventReader<MouseOverEmpty>,
     mut commands: Commands,
 ) {
     for _ in mouse_over_empty.iter() {
-        commands.insert_resource(CurrentOverRegion::None);
+        match current_over_region.as_ref() {
+            CurrentOverRegion::Region(_) => {
+                commands.insert_resource(CurrentOverRegion::None);
+            }
+            _ => {}
+        }
     }
 }
 
@@ -225,8 +240,25 @@ fn update_intro_panel(
     current_over_region: Res<CurrentOverRegion>,
     region_entity_map: Res<RegionEntityMap>,
     asset_server: ResMut<AssetServer>,
+    monster_image_assets: Res<MonsterImageAssets>,
     mut commands: Commands,
 ) {
+    let to_monster_image = |path: &String| -> Handle<Image> {
+        if path == "textures/monsters/m0.png" {
+            return monster_image_assets.m0.clone();
+        }
+        if path == "textures/monsters/m1.png" {
+            return monster_image_assets.m1.clone();
+        }
+        if path == "textures/monsters/m2.png" {
+            return monster_image_assets.m2.clone();
+        }
+        if path == "textures/monsters/m3.png" {
+            return monster_image_assets.m3.clone();
+        }
+
+        return monster_image_assets.m0.clone();
+    };
     if current_over_region.is_changed() {
         match current_over_region.into_inner() {
             CurrentOverRegion::None => {
@@ -317,7 +349,7 @@ fn update_intro_panel(
                                             // align_self: AlignSelf::Center,
                                             ..Default::default()
                                         },
-                                        image: asset_server.load(&enemy_label.image_label).into(),
+                                        image: to_monster_image(&enemy_label.image_label).into(),
                                         ..Default::default()
                                     });
                                 });

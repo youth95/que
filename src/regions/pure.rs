@@ -3,6 +3,7 @@ use crate::{
     marks::{EnemyLabel, EnemyText, HPColor},
     player::Player,
     pool::monsters::{get_monsters_pool, Monster},
+    GameStage,
 };
 use bevy::prelude::*;
 pub struct RegionPurePlugin;
@@ -13,9 +14,9 @@ use crate::{
 };
 
 use super::{
-    events::{MouseOverEmpty, MouseOverRegionEvent, PlayAudioEvent},
+    events::{AudioSound, MouseOverEmpty, MouseOverRegionEvent, PlayAudioEvent},
     manager::Tile,
-    region_entity_map::{RegionEntityMap, CurrentOverRegion},
+    region_entity_map::{CurrentOverRegion, RegionEntityMap},
     ChangeEnemyHpEvent, ChangeRegionStatusEvent, RegionClickEvent, Regions,
 };
 
@@ -33,11 +34,14 @@ impl Plugin for RegionPurePlugin {
             .init_resource::<Regions>()
             .init_resource::<RegionEntityMap>()
             .init_resource::<CurrentOverRegion>()
-            .add_startup_system(spawn_region_system)
-            .add_system(atk_monster)
-            .add_system(visit_region)
-            .add_system(update_enemy_hp_system)
-            .add_system(change_region_status_system);
+            .add_system_set(SystemSet::on_enter(GameStage::Main).with_system(spawn_region_system))
+            .add_system_set(
+                SystemSet::on_update(GameStage::Main)
+                    .with_system(atk_monster)
+                    .with_system(visit_region)
+                    .with_system(update_enemy_hp_system)
+                    .with_system(change_region_status_system),
+            );
     }
 }
 
@@ -109,7 +113,7 @@ pub fn atk_monster(
                         change_enemy_hp_event
                             .send(ChangeEnemyHpEvent(*id, -(player.atk - enemy.def)));
                         player.cur_hp -= (enemy.atk - player.def).max(0);
-                        play_audio_event.send(PlayAudioEvent("sounds/dao5.mp3".to_string()));
+                        play_audio_event.send(PlayAudioEvent(AudioSound::Dao5));
                     }
                 }
             }
@@ -168,7 +172,7 @@ pub fn change_region_status_system(
                 RegionStatus::Found => {
                     if region_id == entity {
                         commands.entity(en).insert(RegionStatus::Visited);
-                        play_audio_event.send(PlayAudioEvent("sounds/click.wav".to_string()));
+                        play_audio_event.send(PlayAudioEvent(AudioSound::Click));
                         if let Some(tile) = regions.tiles.get(region_id) {
                             found_tiles.push(&tile);
                         }
