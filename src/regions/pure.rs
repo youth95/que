@@ -1,8 +1,12 @@
 use crate::{
     components::TileType,
-    marks::{EnemyLabel, EnemyText, HPColor},
+    marks::EnemyLabel,
     player::PlayerStatus,
-    pool::monsters::{get_monsters_pool, Monster},
+    pool::{
+        monsters::{get_monsters_pool, Monster},
+        values::{get_values_pool, Value},
+    },
+    rng::RAND,
     GameStage,
 };
 use bevy::prelude::*;
@@ -39,6 +43,7 @@ impl Plugin for RegionPurePlugin {
                 SystemSet::on_update(GameStage::Main)
                     .with_system(atk_monster)
                     .with_system(visit_region)
+                    .with_system(visit_value_region)
                     .with_system(update_enemy_hp_system)
                     .with_system(change_region_status_system),
             );
@@ -72,10 +77,12 @@ pub fn spawn_region_system(
     mut regions: ResMut<Regions>,
     mut region_entity_map: ResMut<RegionEntityMap>,
 ) {
+    let values_pool = get_values_pool();
     let plane_orientation_pool = get_plane_orientation_pool();
     let monsters_pool = get_monsters_pool();
     regions.clear();
     regions.random_generate_tiles(GEN_REGION_ITEMS, &plane_orientation_pool);
+
     for (_, region) in regions.tiles.iter() {
         let region_status: RegionStatus = match region.to_tile_type() {
             TileType::Started => RegionStatus::Found,
@@ -88,13 +95,20 @@ pub fn spawn_region_system(
             .insert(region_status)
             .id();
         region_entity_map.0.insert(region.id, entity);
+
         if let TileType::Room = region.to_tile_type() {
-            let monster = monsters_pool.fetch_item();
-            commands
-                .entity(entity)
-                .insert(monster.to_enemy_status())
-                .insert(monster.to_enemy_label())
-                .insert(EnemyMark);
+            let (_, is_gen_monsters) = RAND.lock().unwrap().random_val_boolean(0.7);
+            if is_gen_monsters {
+                let monster = monsters_pool.fetch_item();
+                commands
+                    .entity(entity)
+                    .insert(monster.to_enemy_status())
+                    .insert(monster.to_enemy_label())
+                    .insert(EnemyMark);
+            } else {
+                let value = values_pool.fetch_item();
+                commands.entity(entity).insert(value.clone());
+            }
         }
     }
 }
@@ -135,6 +149,39 @@ pub fn visit_region(
     }
 }
 
+pub fn visit_value_region(
+    query: Query<(&RegionId, &RegionStatus, &Value)>,
+    mut trigger_region_event: EventReader<RegionClickEvent>,
+    mut player_status: ResMut<PlayerStatus>,
+) {
+    for RegionClickEvent(id) in trigger_region_event.iter() {
+        for (RegionId(region_id), region_status, value) in query.iter() {
+            if region_id == id && *region_status == RegionStatus::Found {
+                for value in value.values.iter() {
+                    match value {
+                        crate::pool::values::KeyValue::PlayerCurrentHp(val) => {
+                            player_status.cur_hp =
+                                (player_status.cur_hp + val.to_i64()).min(player_status.max_hp);
+                        }
+                        crate::pool::values::KeyValue::PlayerAtk(val) => {
+                            player_status.atk += val.to_i64()
+                        }
+                        crate::pool::values::KeyValue::PlayerDef(val) => {
+                            player_status.def += val.to_i64()
+                        }
+                        crate::pool::values::KeyValue::PlayerMaxHp(val) => {
+                            player_status.max_hp += val.to_i64()
+                        }
+                        crate::pool::values::KeyValue::PlayerGold(val) => {
+                            player_status.gold += val.to_i64()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 pub fn update_enemy_hp_system(
     mut query: Query<(&mut EnemyStatus, &RegionId)>,
     mut change_enemy_hp_event: EventReader<ChangeEnemyHpEvent>,
@@ -158,9 +205,7 @@ pub fn change_region_status_system(
     mut change_region_status_event: EventReader<ChangeRegionStatusEvent>,
     regions: ResMut<Regions>,
     mut sprite_query: Query<(Entity, &RegionId, &RegionStatus), With<RegionMark>>,
-    mut hp_text_query: Query<(&mut Visibility, &RegionId), (With<EnemyText>, Without<HPColor>)>,
-    mut hp_text_color_query: Query<(&mut Visibility, &RegionId), With<HPColor>>,
-
+    mut visible_query: Query<(&mut Visibility, &RegionId)>,
     mut play_audio_event: EventWriter<PlayAudioEvent>,
 ) {
     let mut found_tiles = Vec::<&Tile>::new();
@@ -197,15 +242,7 @@ pub fn change_region_status_system(
             }
         }
         for tile_id in tile.adjacent.clone().into_iter() {
-            for (mut visibility, RegionId(region_id), ..) in hp_text_query.iter_mut() {
-                if tile_id == *region_id {
-                    visibility.is_visible = true;
-                }
-            }
-        }
-
-        for tile_id in tile.adjacent.clone().into_iter() {
-            for (mut visibility, RegionId(region_id), ..) in hp_text_color_query.iter_mut() {
+            for (mut visibility, RegionId(region_id), ..) in visible_query.iter_mut() {
                 if tile_id == *region_id {
                     visibility.is_visible = true;
                 }

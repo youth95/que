@@ -1,0 +1,34 @@
+([
+  ((
+    name: "甲",
+    image_label: "textures/values/empty.png",
+    intro: "一件护甲",
+    values: [
+      PlayerDef(Fixed(1)),
+    ],
+  ),1),
+  ((
+    name: "祝",
+    image_label: "textures/values/empty.png",
+    intro: "一根木棍",
+    values: [
+      PlayerAtk(Fixed(1)),
+    ],
+  ),1),
+  ((
+    name: "泉",
+    image_label: "textures/values/empty.png",
+    intro: "一口山泉",
+    values: [
+      PlayerCurrentHp(Fixed(1)),
+    ],
+  ),1),
+  ((
+    name: "魂",
+    image_label: "textures/values/empty.png",
+    intro: "一些魂魄",
+    values: [
+      PlayerGold(Fixed(1)),
+    ],
+  ),1),
+])

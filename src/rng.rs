@@ -20,6 +20,16 @@ impl RNG {
         (times, if value > 0.5 { true } else { false })
     }
 
+    pub fn random_range_i64(&mut self, min: i64, max: i64) -> (u64, i64) {
+        let (times, value) = self.random();
+        (times, (value as i64 * (max - min + 1) as i64) as i64 + min)
+    }
+
+    pub fn random_val_boolean(&mut self, val: f64) -> (u64, bool) {
+        let (times, value) = self.random();
+        (times, if value < val as f64 { true } else { false })
+    }
+
     pub fn random_times(seed: u64, times: u64) -> (u64, f64) {
         if times < 1 {
             panic!("times must >= 1");

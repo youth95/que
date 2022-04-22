@@ -20,4 +20,7 @@ pub struct MonsterImageAssets {
     pub m2: Handle<Image>,
     #[asset(path = "textures/monsters/m3.png")]
     pub m3: Handle<Image>,
+
+    #[asset(path = "textures/values/empty.png")]
+    pub empty: Handle<Image>,
 }

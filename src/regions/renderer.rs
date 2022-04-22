@@ -2,7 +2,8 @@ use bevy::prelude::*;
 use bevy_kira_audio::Audio;
 
 use crate::camera::SceneCamera;
-use crate::marks::{EnemyMark, RegionId, RegionRect};
+use crate::marks::{EnemyMark, RegionId, RegionRect, ValueText};
+use crate::pool::values::Value;
 use crate::{AudioAssets, GameStage};
 
 use super::events::{MouseOverEmpty, MouseOverRegionEvent, PlayAudioEvent};
@@ -26,6 +27,7 @@ impl Plugin for RegionRenderPlugin {
                 .with_system(spawn_region_rect)
                 .with_system(mouse_interaction)
                 .with_system(fill_enemy_text_system)
+                .with_system(fill_value_text_system)
                 .with_system(update_enemy_hp_text_system)
                 .with_system(region_rect_color_system),
         );
@@ -35,9 +37,9 @@ impl Plugin for RegionRenderPlugin {
 fn spawn_region_rect(
     mut commands: Commands,
     regions: ResMut<Regions>,
-    query: Query<(&RegionId, Option<&EnemyMark>), Added<RegionMark>>,
+    query: Query<(&RegionId, Option<&EnemyMark>, Option<&Value>), Added<RegionMark>>,
 ) {
-    for (RegionId(region_id), enemy_mark) in query.iter() {
+    for (RegionId(region_id), enemy_mark, value) in query.iter() {
         if let Some(tile) = regions.tiles.get(region_id) {
             let transform = tile.to_transform(SIZE, GAP).unwrap();
             let region_id = RegionId(tile.id);
@@ -89,6 +91,24 @@ fn spawn_region_rect(
                     .insert(EnemyText)
                     .insert(region_id);
             }
+
+            if value.is_some() {
+                commands
+                    .spawn_bundle(Text2dBundle {
+                        visibility: Visibility { is_visible: false },
+                        transform: Transform {
+                            translation: Vec3::new(
+                                transform.translation.x,
+                                transform.translation.y,
+                                2.,
+                            ),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    })
+                    .insert(ValueText)
+                    .insert(region_id);
+            }
         }
     }
 }
@@ -113,6 +133,36 @@ fn fill_enemy_text_system(
             if id == region_id {
                 text.set(Box::new(Text::with_section(
                     format!("{}\n{}/{}", enemy.name, enemy.cur_hp, enemy.max_hp),
+                    text_style.clone(),
+                    text_alignment,
+                )))
+                .unwrap();
+            }
+        }
+    }
+}
+
+fn fill_value_text_system(
+    asset_server: Res<AssetServer>,
+    mut query: Query<(&mut Text, &RegionId), Added<ValueText>>,
+    query_value: Query<(&RegionId, &Value)>,
+) {
+    let font = asset_server.load("fonts/hanti.ttf");
+    let text_style = TextStyle {
+        font,
+        font_size: 18.0,
+        color: Color::NAVY,
+    };
+    let text_alignment = TextAlignment {
+        vertical: VerticalAlign::Center,
+        horizontal: HorizontalAlign::Center,
+    };
+
+    for (mut text, RegionId(id)) in &mut query.iter_mut() {
+        for (RegionId(region_id), value) in query_value.iter() {
+            if id == region_id {
+                text.set(Box::new(Text::with_section(
+                    format!("{}", value.name),
                     text_style.clone(),
                     text_alignment,
                 )))

@@ -17,6 +17,8 @@ pub struct Player;
 
 #[derive(Component, Clone)]
 pub struct EnemyText;
+#[derive(Component, Clone)]
+pub struct ValueText;
 
 #[derive(Component)]
 pub struct EnemyMark;

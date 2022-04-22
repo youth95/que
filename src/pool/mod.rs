@@ -1,5 +1,6 @@
 pub mod terrains;
 pub mod monsters;
+pub mod values;
 
 
 #[derive(Debug, Deserialize, Serialize)]
