@@ -84,6 +84,12 @@ impl Default for Regions {
 }
 
 impl Regions {
+    pub fn clear(&mut self) {
+        self.inc_id = 0;
+        self.tile_map.clear();
+        self.tiles.clear();
+    }
+
     pub fn make_tile(&mut self, pos: Point, steps: &[PlaneOrientation]) -> Tile {
         let shape = HashSet::from_iter(
             PlaneOrientation::to_points(steps)

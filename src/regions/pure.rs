@@ -74,6 +74,7 @@ pub fn spawn_region_system(
 ) {
     let plane_orientation_pool = get_plane_orientation_pool();
     let monsters_pool = get_monsters_pool();
+    regions.clear();
     regions.random_generate_tiles(GEN_REGION_ITEMS, &plane_orientation_pool);
     for (_, region) in regions.tiles.iter() {
         let region_status: RegionStatus = match region.to_tile_type() {

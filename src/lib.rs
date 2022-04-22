@@ -6,6 +6,7 @@ mod camera;
 pub mod components;
 // mod debugger;
 mod assets;
+mod game_over;
 pub mod marks;
 mod player;
 pub mod pool;
@@ -17,6 +18,7 @@ use assets::MonsterImageAssets;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use bevy_kira_audio::AudioPlugin;
 pub use camera::CameraPlugin;
+use game_over::GameOverPlugin;
 // pub use debugger::DebuggerPlugin;
 use player::PlayerPlugin;
 use regions::RegionPlugin;
@@ -29,6 +31,7 @@ pub struct GamePlugin;
 pub enum GameStage {
     Loading,
     Main,
+    GameOver,
 }
 
 impl Plugin for GamePlugin {
@@ -40,6 +43,7 @@ impl Plugin for GamePlugin {
             .build(app);
 
         app.add_state(GameStage::Loading)
+            .add_plugin(GameOverPlugin)
             .add_plugin(CameraPlugin)
             .add_plugin(AudioPlugin)
             .add_plugin(RegionPlugin)

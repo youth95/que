@@ -21,7 +21,8 @@ impl Plugin for PlayerPlugin {
                     .with_system(update_current_over_region_empty)
                     .with_system(update_current_over_region)
                     .with_system(update_intro_panel)
-                    .with_system(update_player_status),
+                    .with_system(update_player_status)
+                    .with_system(to_game_over),
             );
     }
 }
@@ -56,7 +57,7 @@ struct IntroPanel;
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // UI camera
     commands.spawn_bundle(UiCameraBundle::default());
-
+    commands.insert_resource(PlayerStatus::default());
     // player status hub
     commands
         .spawn_bundle(NodeBundle {
@@ -175,7 +176,7 @@ fn update_player_status(
     player_status: Res<PlayerStatus>,
     mut query_text: Query<&mut Text, With<PlayerStatusHub>>,
 ) {
-    if player_status.is_changed() {
+    if player_status.is_changed() || player_status.is_added() {
         for mut text in query_text.iter_mut() {
             text.sections[1].value = format!("{:.2}", player_status.cur_hp);
             text.sections[2].value = format!("/{:.2}", player_status.max_hp);
@@ -368,5 +369,13 @@ fn update_intro_panel(
                 }
             }
         };
+    }
+}
+
+fn to_game_over(player_status: Res<PlayerStatus>, mut game_stage: ResMut<State<GameStage>>) {
+    if player_status.is_changed() {
+        if player_status.cur_hp <= 0 {
+            game_stage.set(GameStage::GameOver).unwrap();
+        }
     }
 }
