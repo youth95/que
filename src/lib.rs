@@ -14,7 +14,7 @@ pub mod rng;
 
 pub use assets::AudioAssets;
 use assets::MonsterImageAssets;
-use bevy::prelude::Plugin;
+use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use bevy_kira_audio::AudioPlugin;
 pub use camera::CameraPlugin;
 // pub use debugger::DebuggerPlugin;
@@ -45,4 +45,18 @@ impl Plugin for GamePlugin {
             .add_plugin(RegionPlugin)
             .add_plugin(PlayerPlugin);
     }
+}
+
+pub fn app() -> App {
+    let mut app = App::new();
+    app.insert_resource(WindowDescriptor {
+        title: "䧿".to_string(),
+        width: 1024.,
+        height: 768.,
+        ..Default::default()
+    })
+    .add_plugins(DefaultPlugins)
+    .add_plugin(FrameTimeDiagnosticsPlugin)
+    .add_plugin(GamePlugin);
+    app
 }
