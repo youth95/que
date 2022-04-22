@@ -10,7 +10,7 @@
   ((
     name: "訑",
     image_label: "textures/monsters/m1.png",
-    intro: "未知",
+    intro: "佩戴上它的皮毛\n人就会无所畏惧",
     hp: 20,
     atk: 4,
     def: 4,
@@ -18,7 +18,7 @@
   ((
     name: "付",
     image_label: "textures/monsters/m2.png",
-    intro: "未知",
+    intro: "人吃了它的肉\n就不想睡觉了",
     hp: 30,
     atk: 6,
     def: 4,
@@ -26,7 +26,7 @@
   ((
     name: "灌",
     image_label: "textures/monsters/m3.png",
-    intro: "未知",
+    intro: "把它的羽毛佩戴在身上使人不迷惑",
     hp: 40,
     atk: 8,
     def: 4,

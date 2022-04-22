@@ -308,22 +308,24 @@ fn update_intro_panel(
                                     };
                                     parent.spawn_bundle(TextBundle {
                                         style: Style {
-                                            position_type: PositionType::Relative,
-
+                                            margin: Rect {
+                                                top: Val::Px(20.),
+                                                ..Default::default()
+                                            },
                                             ..Default::default()
                                         },
                                         text: Text {
                                             sections: vec![
-                                                TextSection {
-                                                    value: enemy_label.name.clone(),
-                                                    style: name_style.clone(),
-                                                },
+                                                // TextSection {
+                                                //     value: enemy_label.name.clone(),
+                                                //     style: name_style.clone(),
+                                                // },
                                                 TextSection {
                                                     value: format!("\n{}", enemy_label.intro),
                                                     style: name_style.clone(),
                                                 },
                                                 TextSection {
-                                                    value: "\n攻: ".to_string(),
+                                                    value: "\n\n攻: ".to_string(),
                                                     style: atk_style.clone(),
                                                 },
                                                 TextSection {
@@ -346,10 +348,15 @@ fn update_intro_panel(
                                     });
                                     parent.spawn_bundle(ImageBundle {
                                         style: Style {
-                                            // align_self: AlignSelf::Center,
+                                            align_self: AlignSelf::Stretch,
+                                            max_size: Size::new(
+                                                Val::Percent(100.0),
+                                                Val::Px(200.0),
+                                            ),
                                             ..Default::default()
                                         },
                                         image: to_monster_image(&enemy_label.image_label).into(),
+
                                         ..Default::default()
                                     });
                                 });
