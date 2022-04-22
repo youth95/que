@@ -46,6 +46,7 @@ fn spawn_region_rect(
             commands
                 .spawn()
                 .insert_bundle(SpriteBundle::default())
+                .insert(Visibility { is_visible: false })
                 .insert(transform)
                 .insert(RegionRect)
                 .insert(region_id);
@@ -145,10 +146,10 @@ fn update_enemy_hp_text_system(
 
 fn region_rect_color_system(
     region_status_query: Query<(&RegionId, &RegionStatus)>,
-    mut region_react_query: Query<(&mut Sprite, &RegionId), With<RegionRect>>,
+    mut region_react_query: Query<(&RegionId, &mut Sprite, &mut Visibility), With<RegionRect>>,
 ) {
     for (RegionId(region_id), region_status) in region_status_query.iter() {
-        for (mut sprite, RegionId(id)) in region_react_query.iter_mut() {
+        for (RegionId(id), mut sprite, mut visibility) in region_react_query.iter_mut() {
             if region_id == id {
                 match region_status {
                     RegionStatus::Mist => {
@@ -160,6 +161,9 @@ fn region_rect_color_system(
                     RegionStatus::Visited => {
                         sprite.color = Color::GRAY;
                     }
+                };
+                if visibility.is_visible == false {
+                    visibility.is_visible = true
                 }
             }
         }
