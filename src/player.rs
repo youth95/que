@@ -14,19 +14,20 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_system_set(SystemSet::on_enter(GameStage::Main).with_system(setup))
+        app.init_resource::<PlayerStatus>()
+            .add_system_set(SystemSet::on_enter(GameStage::Main).with_system(setup))
             .add_system_set(
                 SystemSet::on_update(GameStage::Main)
                     .with_system(update_current_over_region_empty)
                     .with_system(update_current_over_region)
                     .with_system(update_intro_panel)
-                    .with_system(debug),
+                    .with_system(update_player_status),
             );
     }
 }
 
-#[derive(Component, Debug)]
-pub struct Player {
+#[derive(Debug)]
+pub struct PlayerStatus {
     pub atk: i64,
     pub def: i64,
     pub cur_hp: i64,
@@ -34,7 +35,7 @@ pub struct Player {
     pub gold: i64,
 }
 
-impl Default for Player {
+impl Default for PlayerStatus {
     fn default() -> Self {
         Self {
             atk: 10,
@@ -47,14 +48,12 @@ impl Default for Player {
 }
 
 #[derive(Component)]
-struct FpsText;
+struct PlayerStatusHub;
 
 #[derive(Component)]
 struct IntroPanel;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn().insert(Player::default());
-
     // UI camera
     commands.spawn_bundle(UiCameraBundle::default());
 
@@ -146,7 +145,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
                     ..Default::default()
                 })
-                .insert(FpsText);
+                .insert(PlayerStatusHub);
         });
 
     // intro panel
@@ -172,15 +171,18 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(IntroPanel);
 }
 
-fn debug(query: Query<&Player, Changed<Player>>, mut query_text: Query<&mut Text, With<FpsText>>) {
-    for player in query.iter() {
+fn update_player_status(
+    player_status: Res<PlayerStatus>,
+    mut query_text: Query<&mut Text, With<PlayerStatusHub>>,
+) {
+    if player_status.is_changed() {
         for mut text in query_text.iter_mut() {
-            text.sections[1].value = format!("{:.2}", player.cur_hp);
-            text.sections[2].value = format!("/{:.2}", player.max_hp);
+            text.sections[1].value = format!("{:.2}", player_status.cur_hp);
+            text.sections[2].value = format!("/{:.2}", player_status.max_hp);
 
-            text.sections[4].value = format!("{}", player.atk);
-            text.sections[6].value = format!("{}", player.def);
-            text.sections[8].value = format!("{}", player.gold);
+            text.sections[4].value = format!("{}", player_status.atk);
+            text.sections[6].value = format!("{}", player_status.def);
+            text.sections[8].value = format!("{}", player_status.gold);
         }
     }
 }

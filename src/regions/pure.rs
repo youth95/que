@@ -1,7 +1,7 @@
 use crate::{
     components::TileType,
     marks::{EnemyLabel, EnemyText, HPColor},
-    player::Player,
+    player::PlayerStatus,
     pool::monsters::{get_monsters_pool, Monster},
     GameStage,
 };
@@ -99,7 +99,7 @@ pub fn spawn_region_system(
 }
 
 pub fn atk_monster(
-    mut player_query: Query<&mut Player>,
+    mut player_status: ResMut<PlayerStatus>,
     query: Query<(&RegionId, &RegionStatus, &EnemyStatus)>,
     mut trigger_region_event: EventReader<RegionClickEvent>,
     mut change_enemy_hp_event: EventWriter<ChangeEnemyHpEvent>,
@@ -109,12 +109,10 @@ pub fn atk_monster(
         for (RegionId(region_id), region_status, enemy) in query.iter() {
             if region_id == id {
                 if *region_status == RegionStatus::Found {
-                    if let Ok(mut player) = player_query.get_single_mut() {
-                        change_enemy_hp_event
-                            .send(ChangeEnemyHpEvent(*id, -(player.atk - enemy.def)));
-                        player.cur_hp -= (enemy.atk - player.def).max(0);
-                        play_audio_event.send(PlayAudioEvent(AudioSound::Dao5));
-                    }
+                    change_enemy_hp_event
+                        .send(ChangeEnemyHpEvent(*id, -(player_status.atk - enemy.def)));
+                    player_status.cur_hp -= (enemy.atk - player_status.def).max(0);
+                    play_audio_event.send(PlayAudioEvent(AudioSound::Dao5));
                 }
             }
         }
