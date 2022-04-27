@@ -14,7 +14,7 @@ pub mod regions;
 pub mod rng;
 
 pub use assets::AudioAssets;
-use assets::MonsterImageAssets;
+use assets::{MonsterImageAssets, UIImageAssets};
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use bevy_kira_audio::AudioPlugin;
 pub use camera::CameraPlugin;
@@ -40,6 +40,7 @@ impl Plugin for GamePlugin {
             .continue_to_state(GameStage::Main)
             .with_collection::<MonsterImageAssets>()
             .with_collection::<AudioAssets>()
+            .with_collection::<UIImageAssets>()
             .build(app);
 
         app.add_state(GameStage::Loading)

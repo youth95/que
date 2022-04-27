@@ -27,3 +27,16 @@ pub struct MonsterImageAssets {
     #[asset(path = "textures/monster_icons", folder(typed))]
     pub icons: Vec<Handle<Image>>,
 }
+
+
+#[derive(AssetCollection)]
+pub struct UIImageAssets {
+    #[asset(path = "textures/ui/icons/icon_ATK.png")]
+    pub icon_atk: Handle<Image>,
+    #[asset(path = "textures/ui/icons/icon_DEF.png")]
+    pub icon_def: Handle<Image>,
+    #[asset(path = "textures/ui/icons/icon_Gold.png")]
+    pub icon_gold: Handle<Image>,
+    #[asset(path = "textures/ui/icons/icon_HP.png")]
+    pub icon_hp: Handle<Image>,
+}

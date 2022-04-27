@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    assets::MonsterImageAssets,
+    assets::{MonsterImageAssets, UIImageAssets},
     marks::{EnemyLabel, EnemyStatus, RegionStatus},
     pool::values,
     regions::{
@@ -57,15 +57,24 @@ struct PlayerStatusHub;
 #[derive(Component)]
 struct IntroPanel;
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+#[derive(Component)]
+enum StatusType {
+    ATK,
+    DEF,
+    HP,
+    GOLD,
+}
+
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>, ui_image: Res<UIImageAssets>) {
     // UI camera
     commands.spawn_bundle(UiCameraBundle::default());
     commands.insert_resource(PlayerStatus::default());
     // player status hub
+    // TODO 加底图
     commands
         .spawn_bundle(NodeBundle {
             style: Style {
-                size: Size::new(Val::Px(100.0), Val::Percent(100.0)),
+                size: Size::new(Val::Px(100.0), Val::Px(70.0)),
                 position_type: PositionType::Absolute,
                 position: Rect {
                     left: Val::Px(0.0),
@@ -74,82 +83,174 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 },
                 ..default()
             },
-            color: Color::rgba_u8(0, 0, 0, 254).into(),
+            color: Color::NONE.into(),
             ..default()
         })
         .with_children(|parent| {
-            // Rich text with multiple sections
-            let hp_style = TextStyle {
-                font: asset_server.load("fonts/hanti.ttf"),
-                font_size: 18.0,
-                color: Color::GREEN,
-            };
-            let atk_style = TextStyle {
-                font: asset_server.load("fonts/hanti.ttf"),
-                font_size: 18.0,
-                color: Color::RED,
-            };
-            let def_style = TextStyle {
-                font: asset_server.load("fonts/hanti.ttf"),
-                font_size: 18.0,
-                color: Color::BLUE,
-            };
-            let gold_style = TextStyle {
-                font: asset_server.load("fonts/hanti.ttf"),
-                font_size: 18.0,
-                color: Color::GOLD,
-            };
             parent
-                .spawn_bundle(TextBundle {
+                .spawn_bundle(NodeBundle {
+                    color: Color::NONE.into(),
                     style: Style {
-                        align_self: AlignSelf::Center,
-                        ..Default::default()
+                        flex_direction: FlexDirection::ColumnReverse,
+                        justify_content: JustifyContent::SpaceBetween,
+                        padding: Rect::all(Val::Px(5.0)),
+                        ..default()
                     },
-                    text: Text {
-                        sections: vec![
-                            TextSection {
-                                value: "血: ".to_string(),
-                                style: hp_style.clone(),
-                            },
-                            TextSection {
-                                value: "".to_string(),
-                                style: hp_style.clone(),
-                            },
-                            TextSection {
-                                value: "".to_string(),
-                                style: hp_style.clone(),
-                            },
-                            TextSection {
-                                value: "\n攻: ".to_string(),
-                                style: atk_style.clone(),
-                            },
-                            TextSection {
-                                value: "".to_string(),
-                                style: atk_style.clone(),
-                            },
-                            TextSection {
-                                value: "\n防: ".to_string(),
-                                style: def_style.clone(),
-                            },
-                            TextSection {
-                                value: "".to_string(),
-                                style: def_style.clone(),
-                            },
-                            TextSection {
-                                value: "\n魂: ".to_string(),
-                                style: gold_style.clone(),
-                            },
-                            TextSection {
-                                value: "".to_string(),
-                                style: gold_style.clone(),
-                            },
-                        ],
-                        ..Default::default()
-                    },
-
-                    ..Default::default()
+                    ..default()
                 })
-                .insert(PlayerStatusHub);
+                .with_children(|parent| {
+                    parent
+                        .spawn_bundle(NodeBundle {
+                            color: Color::NONE.into(),
+                            style: Style { ..default() },
+                            ..default()
+                        })
+                        .with_children(|parent| {
+                            parent.spawn_bundle(ImageBundle {
+                                style: Style {
+                                    size: Size::new(Val::Px(16.0), Val::Px(16.0)),
+                                    ..default()
+                                },
+                                image: UiImage(ui_image.icon_hp.clone_weak()),
+                                ..default()
+                            });
+                            // hp
+                            parent
+                                .spawn_bundle(TextBundle {
+                                    style: Style {
+                                        size: Size::new(Val::Px(16.0), Val::Px(16.0)),
+                                        min_size: Size::new(Val::Px(34.0), Val::Px(16.0)),
+                                        ..default()
+                                    },
+                                    text: Text {
+                                        sections: vec![TextSection {
+                                            style: TextStyle {
+                                                font: asset_server.load("fonts/hanti.ttf"),
+                                                font_size: 16.0,
+                                                color: Color::GREEN.into(),
+                                                ..default()
+                                            },
+                                            value: "100/100".to_string(),
+                                        }],
+                                        ..default()
+                                    },
+                                    ..default()
+                                })
+                                .insert(StatusType::HP);
+                        });
+
+                    parent
+                        .spawn_bundle(NodeBundle {
+                            color: Color::NONE.into(),
+                            style: Style { ..default() },
+                            ..default()
+                        })
+                        .with_children(|parent| {
+                            parent.spawn_bundle(ImageBundle {
+                                style: Style {
+                                    size: Size::new(Val::Px(16.0), Val::Px(16.0)),
+                                    ..default()
+                                },
+                                image: UiImage(ui_image.icon_atk.clone_weak()),
+                                ..default()
+                            });
+                            // atk
+                            parent
+                                .spawn_bundle(TextBundle {
+                                    style: Style {
+                                        size: Size::new(Val::Px(16.0), Val::Px(16.0)),
+                                        min_size: Size::new(Val::Px(34.0), Val::Px(16.0)),
+                                        ..default()
+                                    },
+                                    text: Text {
+                                        sections: vec![TextSection {
+                                            style: TextStyle {
+                                                font: asset_server.load("fonts/hanti.ttf"),
+                                                font_size: 16.0,
+                                                color: Color::RED.into(),
+                                                ..default()
+                                            },
+                                            value: "80".to_string(),
+                                        }],
+                                        ..default()
+                                    },
+                                    ..default()
+                                })
+                                .insert(StatusType::ATK);
+
+                            parent.spawn_bundle(ImageBundle {
+                                style: Style {
+                                    size: Size::new(Val::Px(16.0), Val::Px(16.0)),
+                                    ..default()
+                                },
+                                image: UiImage(ui_image.icon_def.clone_weak()),
+                                ..default()
+                            });
+                            // def
+                            parent
+                                .spawn_bundle(TextBundle {
+                                    style: Style {
+                                        size: Size::new(Val::Px(16.0), Val::Px(16.0)),
+                                        min_size: Size::new(Val::Px(34.0), Val::Px(16.0)),
+                                        ..default()
+                                    },
+                                    text: Text {
+                                        sections: vec![TextSection {
+                                            style: TextStyle {
+                                                font: asset_server.load("fonts/hanti.ttf"),
+                                                font_size: 16.0,
+                                                color: Color::BLUE.into(),
+                                                ..default()
+                                            },
+                                            value: "80".to_string(),
+                                        }],
+                                        ..default()
+                                    },
+                                    ..default()
+                                })
+                                .insert(StatusType::DEF);
+                        });
+
+                    parent
+                        .spawn_bundle(NodeBundle {
+                            color: Color::NONE.into(),
+                            style: Style { ..default() },
+                            ..default()
+                        })
+                        .with_children(|parent| {
+                            parent.spawn_bundle(ImageBundle {
+                                style: Style {
+                                    size: Size::new(Val::Px(16.0), Val::Px(16.0)),
+                                    ..default()
+                                },
+                                image: UiImage(ui_image.icon_gold.clone_weak()),
+                                ..default()
+                            });
+                            // gold
+                            parent
+                                .spawn_bundle(TextBundle {
+                                    style: Style {
+                                        size: Size::new(Val::Px(16.0), Val::Px(16.0)),
+                                        min_size: Size::new(Val::Px(34.0), Val::Px(16.0)),
+                                        ..default()
+                                    },
+                                    text: Text {
+                                        sections: vec![TextSection {
+                                            style: TextStyle {
+                                                font: asset_server.load("fonts/hanti.ttf"),
+                                                font_size: 16.0,
+                                                color: Color::GOLD.into(),
+                                                ..default()
+                                            },
+                                            value: "80".to_string(),
+                                        }],
+                                        ..default()
+                                    },
+                                    ..default()
+                                })
+                                .insert(StatusType::GOLD);
+                        });
+                });
         });
 
     // intro panel
@@ -177,15 +278,15 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 fn update_player_status(
     player_status: Res<PlayerStatus>,
-    mut query_text: Query<&mut Text, With<PlayerStatusHub>>,
+    mut query_text: Query<(&mut Text, &StatusType)>,
 ) {
-    for mut text in query_text.iter_mut() {
-        text.sections[1].value = format!("{:.2}", player_status.cur_hp);
-        text.sections[2].value = format!("/{:.2}", player_status.max_hp);
-
-        text.sections[4].value = format!("{}", player_status.atk);
-        text.sections[6].value = format!("{}", player_status.def);
-        text.sections[8].value = format!("{}", player_status.gold);
+    for (mut text, status) in query_text.iter_mut() {
+        text.sections[0].value = match status {
+            StatusType::ATK => format!("{}", player_status.atk),
+            StatusType::DEF => format!("{}", player_status.def),
+            StatusType::HP => format!("{}/{}", player_status.cur_hp, player_status.max_hp),
+            StatusType::GOLD => format!("{}", player_status.gold),
+        };
     }
 }
 
