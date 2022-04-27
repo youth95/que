@@ -21,6 +21,7 @@ use super::{
     events::{AudioSound, MouseOverEmpty, MouseOverRegionEvent, PlayAudioEvent},
     manager::Tile,
     region_entity_map::{CurrentOverRegion, RegionEntityMap},
+    renderer::WorldMouse,
     ChangeEnemyHpEvent, ChangeRegionStatusEvent, RegionClickEvent, Regions,
 };
 
@@ -35,12 +36,15 @@ impl Plugin for RegionPurePlugin {
             .add_event::<ChangeRegionStatusEvent>()
             .add_event::<MouseOverEmpty>()
             .add_event::<MouseOverRegionEvent>()
+            .init_resource::<PlayerStatus>()
+            .init_resource::<WorldMouse>()
             .init_resource::<Regions>()
             .init_resource::<RegionEntityMap>()
             .init_resource::<CurrentOverRegion>()
             .add_system_set(SystemSet::on_enter(GameStage::Main).with_system(spawn_region_system))
             .add_system_set(
                 SystemSet::on_update(GameStage::Main)
+                    // .with_system(click_region_effect)
                     .with_system(atk_monster)
                     .with_system(visit_region)
                     .with_system(visit_value_region)
@@ -68,6 +72,7 @@ impl Monster {
             name: self.name.clone(),
             intro: self.intro.clone(),
             image_label: self.image_label.clone(),
+            icon: self.icon.clone(),
         }
     }
 }
@@ -133,6 +138,24 @@ pub fn atk_monster(
         }
     }
 }
+
+// pub fn click_region_effect(
+//     world_mouse: Res<WorldMouse>,
+//     mut trigger_region_event: EventReader<RegionClickEvent>,
+//     mut commands: Commands,
+// ) {
+//     for RegionClickEvent(_) in trigger_region_event.iter() {
+//         for _ in 0..60 {
+//             commands
+//                 .spawn()
+//                 .as_particle(Transform::from_translation(Vec3::new(
+//                     world_mouse.0.x,
+//                     world_mouse.0.y,
+//                     99.,
+//                 )));
+//         }
+//     }
+// }
 
 pub fn visit_region(
     query: Query<(&RegionId, &RegionStatus), Without<EnemyMark>>,

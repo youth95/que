@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_kira_audio::Audio;
 
 use crate::camera::SceneCamera;
-use crate::marks::{EnemyMark, RegionId, RegionRect, ValueText};
+use crate::marks::{EnemyLabel, EnemyMark, RegionId, RegionRect, ValueText};
 use crate::pool::values::Value;
 use crate::{AudioAssets, GameStage};
 
@@ -23,6 +23,7 @@ impl Plugin for RegionRenderPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_system_set(
             SystemSet::on_update(GameStage::Main)
+                .with_system(current_world_mouse)
                 .with_system(play_audio_system)
                 .with_system(spawn_region_rect)
                 .with_system(mouse_interaction)
@@ -37,9 +38,18 @@ impl Plugin for RegionRenderPlugin {
 fn spawn_region_rect(
     mut commands: Commands,
     regions: ResMut<Regions>,
-    query: Query<(&RegionId, Option<&EnemyMark>, Option<&Value>), Added<RegionMark>>,
+    asset_server: Res<AssetServer>,
+    query: Query<
+        (
+            &RegionId,
+            Option<&EnemyMark>,
+            Option<&Value>,
+            Option<&EnemyLabel>,
+        ),
+        Added<RegionMark>,
+    >,
 ) {
-    for (RegionId(region_id), enemy_mark, value) in query.iter() {
+    for (RegionId(region_id), _, value, label) in query.iter() {
         if let Some(tile) = regions.tiles.get(region_id) {
             let transform = tile.to_transform(SIZE, GAP).unwrap();
             let region_id = RegionId(tile.id);
@@ -48,12 +58,15 @@ fn spawn_region_rect(
             commands
                 .spawn()
                 .insert_bundle(SpriteBundle::default())
-                .insert(Visibility { is_visible: false })
+                .insert(Sprite {
+                    color: Color::NONE,
+                    ..default()
+                })
                 .insert(transform)
                 .insert(RegionRect)
                 .insert(region_id);
 
-            if enemy_mark.is_some() {
+            if let Some(label) = label {
                 //  enemy hp color
                 commands
                     .spawn()
@@ -75,21 +88,54 @@ fn spawn_region_rect(
                     .insert(Visibility { is_visible: false })
                     .insert(region_id);
                 // enemy current_hp_text
+                let icon = asset_server.get_handle(label.icon.as_str());
                 commands
-                    .spawn_bundle(Text2dBundle {
-                        visibility: Visibility { is_visible: false },
-                        transform: Transform {
-                            translation: Vec3::new(
-                                transform.translation.x,
-                                transform.translation.y,
-                                2.,
-                            ),
-                            ..Default::default()
-                        },
+                    .spawn_bundle(SpriteBundle::default())
+                    .insert(Transform {
+                        translation: Vec3::new(
+                            transform.translation.x,
+                            transform.translation.y,
+                            2.,
+                        ),
+                        // scale: transform.scale,
                         ..Default::default()
                     })
-                    .insert(EnemyText)
-                    .insert(region_id);
+                    .insert(Sprite {
+                        color: Color::NONE,
+                        custom_size: Some(Vec2::new(transform.scale.x, transform.scale.y)),
+                        ..default()
+                    })
+                    .with_children(|parent| {
+                        // text
+                        parent
+                            .spawn_bundle(Text2dBundle {
+                                transform: Transform {
+                                    translation: Vec3::new(0., -8., 1.),
+                                    ..Default::default()
+                                },
+                                ..Default::default()
+                            })
+                            .insert(Visibility { is_visible: false })
+                            .insert(EnemyText)
+                            .insert(region_id);
+                        // icon
+                        parent
+                            .spawn_bundle(SpriteBundle {
+                                sprite: Sprite {
+                                    color: Color::GOLD,
+                                    custom_size: Some(Vec2::new(16., 16.)),
+                                    ..default()
+                                },
+                                texture: icon,
+                                transform: Transform {
+                                    translation: Vec3::new(0., 8., 1.),
+                                    ..Default::default()
+                                },
+                                ..default()
+                            })
+                            .insert(Visibility { is_visible: false })
+                            .insert(region_id);
+                    });
             }
 
             if value.is_some() {
@@ -121,7 +167,7 @@ fn fill_enemy_text_system(
     let font = asset_server.load("fonts/hanti.ttf");
     let text_style = TextStyle {
         font,
-        font_size: 18.0,
+        font_size: 16.0,
         color: Color::WHITE,
     };
     let text_alignment = TextAlignment {
@@ -132,7 +178,7 @@ fn fill_enemy_text_system(
         for (enemy, RegionId(region_id)) in &mut query_enemy.iter() {
             if id == region_id {
                 text.set(Box::new(Text::with_section(
-                    format!("{}\n{}/{}", enemy.name, enemy.cur_hp, enemy.max_hp),
+                    format!("\n{}/{}", enemy.cur_hp, enemy.max_hp),
                     text_style.clone(),
                     text_alignment,
                 )))
@@ -182,7 +228,7 @@ fn update_enemy_hp_text_system(
             if id == region_id {
                 if text.sections.len() != 0 {
                     text.sections[0].value =
-                        format!("{}\n{}/{}", enemy.name, enemy.cur_hp, enemy.max_hp);
+                        format!("\n{}/{}", enemy.cur_hp, enemy.max_hp);
                 }
                 for (mut sp, RegionId(region_id)) in &mut query_color.iter_mut() {
                     if region_id == id {
@@ -195,11 +241,14 @@ fn update_enemy_hp_text_system(
 }
 
 fn region_rect_color_system(
-    region_status_query: Query<(&RegionId, &RegionStatus)>,
-    mut region_react_query: Query<(&RegionId, &mut Sprite, &mut Visibility), With<RegionRect>>,
+    region_status_query: Query<
+        (&RegionId, &RegionStatus),
+        // Or<(Changed<RegionStatus>, Added<RegionStatus>)>,
+    >,
+    mut region_react_query: Query<(&RegionId, &mut Sprite), With<RegionRect>>,
 ) {
     for (RegionId(region_id), region_status) in region_status_query.iter() {
-        for (RegionId(id), mut sprite, mut visibility) in region_react_query.iter_mut() {
+        for (RegionId(id), mut sprite) in region_react_query.iter_mut() {
             if region_id == id {
                 match region_status {
                     RegionStatus::Mist => {
@@ -212,9 +261,6 @@ fn region_rect_color_system(
                         sprite.color = Color::GRAY;
                     }
                 };
-                if visibility.is_visible == false {
-                    visibility.is_visible = true
-                }
             }
         }
     }
@@ -258,6 +304,26 @@ fn mouse_interaction(
         mouse_over_region.send(MouseOverRegionEvent(id));
     } else {
         mouse_over_empty.send(MouseOverEmpty);
+    }
+}
+
+#[derive(Default)]
+pub struct WorldMouse(pub Vec4);
+
+fn current_world_mouse(
+    windows: Res<Windows>,
+    q_camera: Query<&Transform, With<SceneCamera>>,
+    mut commands: Commands,
+) {
+    if let Some(wnd) = windows.get_primary() {
+        if let Some(pos) = wnd.cursor_position() {
+            let size = Vec2::new(wnd.width() as f32, wnd.height() as f32);
+            let p = pos - size / 2.0;
+            if let Ok(camera_transform) = q_camera.get_single() {
+                let pos_wld = camera_transform.compute_matrix() * p.extend(0.0).extend(1.0);
+                commands.insert_resource(WorldMouse(pos_wld));
+            }
+        }
     }
 }
 

@@ -6,6 +6,7 @@ use super::Pool;
 pub struct Monster {
     pub name: String,
     pub intro: String,
+    pub icon: String,
     pub atk: i64,
     pub def: i64,
     pub hp: u64,

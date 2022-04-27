@@ -23,4 +23,7 @@ pub struct MonsterImageAssets {
 
     #[asset(path = "textures/values/empty.png")]
     pub empty: Handle<Image>,
+
+    #[asset(path = "textures/monster_icons", folder(typed))]
+    pub icons: Vec<Handle<Image>>,
 }

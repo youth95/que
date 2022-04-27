@@ -5,16 +5,16 @@ version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-
 [dependencies]
 bevy_asset_loader = "0.10"
 bevy_console = "0.3.0"
+bevy_mod_debugdump = "0.4"
+bevy_prototype_lyon = "0.5"
+interpolation = "0.2"
 lazy_static = "1.4.0"
 rand = "0.8.5"
 ron = "0.7"
 serde = {version = "1", features = ["derive"]}
-bevy_mod_debugdump = "0.4"
-
 
 [dependencies.bevy]
 default-features = false

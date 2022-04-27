@@ -36,6 +36,7 @@ pub struct EnemyLabel {
     pub name: String,
     pub intro: String,
     pub image_label: String,
+    pub icon: String,
 }
 
 #[derive(Component)]
