@@ -39,4 +39,10 @@ pub struct UIImageAssets {
     pub icon_gold: Handle<Image>,
     #[asset(path = "textures/ui/icons/icon_HP.png")]
     pub icon_hp: Handle<Image>,
+
+    #[asset(path = "textures/ui/icons/cursor1.png")]
+    pub icon_cursor1: Handle<Image>,
+
+    #[asset(path = "textures/ui/icons/cursor2.png")]
+    pub icon_cursor2: Handle<Image>,
 }
