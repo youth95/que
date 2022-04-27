@@ -15,7 +15,10 @@ pub mod rng;
 
 pub use assets::AudioAssets;
 use assets::{MonsterImageAssets, UIImageAssets};
-use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
+use bevy::{
+    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+    prelude::*,
+};
 use bevy_kira_audio::AudioPlugin;
 pub use camera::CameraPlugin;
 use game_over::GameOverPlugin;
@@ -62,6 +65,7 @@ pub fn app() -> App {
     })
     .add_plugins(DefaultPlugins)
     .add_plugin(FrameTimeDiagnosticsPlugin)
+    .add_plugin(LogDiagnosticsPlugin::default())
     .add_plugin(GamePlugin);
     app
 }
