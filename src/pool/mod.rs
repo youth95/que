@@ -1,7 +1,6 @@
-pub mod terrains;
 pub mod monsters;
+pub mod terrains;
 pub mod values;
-
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Weight<T>(pub T, pub f64);
@@ -72,4 +71,3 @@ impl<T> Pool<T> {
         self.0.iter().map(|node| node.1 / count).collect::<Vec<_>>()
     }
 }
-

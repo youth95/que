@@ -12,8 +12,8 @@ pub struct MouseOverEmpty;
 pub struct PlayAudioEvent(pub AudioSound);
 
 pub enum AudioSound {
-  Click,
-  Dao5,
+    Click,
+    Dao5,
 }
 
 // 敌人血量变化事件

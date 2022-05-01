@@ -3,29 +3,23 @@ use bevy::{prelude::*, sprite::Anchor};
 use crate::{
     assets::UIImageAssets,
     marks::{EnemyLabel, EnemyStatus},
+    panel::BattlePanelVisibly,
     pool::values,
-    regions::{CurrentOverRegion, RegionEntityMap, RegionMark, WorldMouse},
+    regions::{CurrentOverRegion, RegionEntityMap, RegionMark},
     GameStage, PlayerStatusType,
 };
+
+use super::BattlePanel;
 pub struct BattlePlugin;
 
 impl Plugin for BattlePlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(SystemSet::on_enter(GameStage::Main).with_system(setup))
             .add_system_set(
-                SystemSet::on_update(GameStage::Main)
-                    .with_system(update_battle_panel_enemy_label)
-                    .with_system(update_battle_panel_pos)
-                    .with_system(update_battle_panel_visibly),
+                SystemSet::on_update(GameStage::Main).with_system(update_battle_panel_enemy_label),
             );
     }
 }
-
-#[derive(Component)]
-struct BattlePanel;
-
-#[derive(Component)]
-struct BattlePanelVisibly;
 
 #[derive(Component)]
 enum BattlePanelPart {
@@ -181,21 +175,6 @@ fn setup(
         });
 }
 
-fn update_battle_panel_pos(
-    mut query: Query<&mut Transform, With<BattlePanel>>,
-    world_mouse: Res<WorldMouse>,
-) {
-    if world_mouse.is_changed() {
-        for mut transform in query.iter_mut() {
-            let mut pos = world_mouse.0.clone();
-            pos.z = 99.;
-            pos.x += 20.;
-            transform.translation = pos;
-            transform.scale = Vec3::new(1.5, 1.5, 1.0);
-        }
-    }
-}
-
 fn update_battle_panel_enemy_label(
     region_mark_query: Query<
         (&EnemyLabel, &EnemyStatus),
@@ -234,35 +213,4 @@ fn update_battle_panel_enemy_label(
             }
         }
     };
-}
-
-fn update_battle_panel_visibly(
-    current_over_region: Res<CurrentOverRegion>,
-    mut panel_query: Query<&mut Visibility, With<BattlePanelVisibly>>,
-
-    region_mark_query: Query<
-        (&EnemyLabel, &EnemyStatus),
-        (With<RegionMark>, Without<values::Value>),
-    >,
-    region_entity_map: Res<RegionEntityMap>,
-) {
-    if current_over_region.is_changed() {
-        let mut set = |v: bool| {
-            for mut visibility in panel_query.iter_mut() {
-                visibility.is_visible = v;
-            }
-        };
-        match current_over_region.as_ref() {
-            CurrentOverRegion::None => set(false),
-            CurrentOverRegion::Region(id) => {
-                if let Some(entity) = region_entity_map.0.get(id) {
-                    if let Ok(_) = region_mark_query.get_component::<EnemyLabel>(*entity) {
-                        set(true);
-                        return;
-                    }
-                }
-                set(false);
-            }
-        };
-    }
 }

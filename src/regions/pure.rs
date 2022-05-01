@@ -1,6 +1,7 @@
 use crate::{
     components::TileType,
     marks::EnemyLabel,
+    panel::{HasBattlePanel, HasValuePanel},
     player::PlayerStatus,
     pool::{
         monsters::{get_monsters_pool, Monster},
@@ -109,10 +110,14 @@ pub fn spawn_region_system(
                     .entity(entity)
                     .insert(monster.to_enemy_status())
                     .insert(monster.to_enemy_label())
-                    .insert(EnemyMark);
+                    .insert(EnemyMark)
+                    .insert(HasBattlePanel);
             } else {
                 let value = values_pool.fetch_item();
-                commands.entity(entity).insert(value.clone());
+                commands
+                    .entity(entity)
+                    .insert(value.clone())
+                    .insert(HasValuePanel);
             }
         }
     }

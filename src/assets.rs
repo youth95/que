@@ -45,6 +45,9 @@ pub struct UIImageAssets {
     #[asset(path = "textures/ui/components/battle_panel.png")]
     pub battle_panel: Handle<Image>,
 
+    #[asset(path = "textures/ui/components/text_panel.png")]
+    pub text_panel: Handle<Image>,
+
     #[asset(path = "textures/ui/icons/cursor1.png")]
     pub icon_cursor1: Handle<Image>,
 
