@@ -6,6 +6,7 @@ mod camera;
 pub mod components;
 // mod debugger;
 mod assets;
+mod battle;
 mod game_over;
 pub mod marks;
 mod player;
@@ -15,13 +16,16 @@ pub mod rng;
 
 pub use assets::AudioAssets;
 use assets::{MonsterImageAssets, UIImageAssets};
+use battle::BattlePlugin;
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::*,
 };
 use bevy_kira_audio::AudioPlugin;
+use bevy_ninepatch::*;
 pub use camera::CameraPlugin;
 use game_over::GameOverPlugin;
+pub use player::PlayerStatusType;
 // pub use debugger::DebuggerPlugin;
 use player::PlayerPlugin;
 use regions::RegionPlugin;
@@ -47,11 +51,13 @@ impl Plugin for GamePlugin {
             .build(app);
 
         app.add_state(GameStage::Loading)
+            .add_plugin(NinePatchPlugin::<()>::default())
             .add_plugin(GameOverPlugin)
             .add_plugin(CameraPlugin)
             .add_plugin(AudioPlugin)
             .add_plugin(RegionPlugin)
-            .add_plugin(PlayerPlugin);
+            .add_plugin(PlayerPlugin)
+            .add_plugin(BattlePlugin);
     }
 }
 

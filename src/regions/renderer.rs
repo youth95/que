@@ -25,13 +25,13 @@ impl Plugin for RegionRenderPlugin {
         app.add_system_set(SystemSet::on_enter(GameStage::Main).with_system(setup))
             .add_system_set(
                 SystemSet::on_update(GameStage::Main)
-                    .with_system(update_cursor_texture)
-                    .with_system(update_cursor_pos)
+                    // .with_system(update_cursor_texture)
+                    // .with_system(update_cursor_pos)
                     .with_system(current_world_mouse)
                     .with_system(play_audio_system)
                     .with_system(spawn_region_rect)
                     .with_system(mouse_interaction)
-                    .with_system(fill_enemy_text_system)
+                    // .with_system(fill_enemy_text_system)
                     .with_system(fill_value_text_system)
                     .with_system(update_enemy_hp_text_system)
                     .with_system(region_rect_color_system),
@@ -132,7 +132,7 @@ fn spawn_region_rect(
                                 },
                                 texture: icon,
                                 transform: Transform {
-                                    translation: Vec3::new(0., 8., 1.),
+                                    scale: Vec3::new(1.5, 1.5, 1.),
                                     ..Default::default()
                                 },
                                 ..default()
@@ -163,34 +163,34 @@ fn spawn_region_rect(
     }
 }
 
-fn fill_enemy_text_system(
-    asset_server: Res<AssetServer>,
-    mut query: Query<(&mut Text, &RegionId), Added<EnemyText>>,
-    query_enemy: Query<(&EnemyStatus, &RegionId)>,
-) {
-    let font = asset_server.load("fonts/hanti.ttf");
-    let text_style = TextStyle {
-        font,
-        font_size: 16.0,
-        color: Color::WHITE,
-    };
-    let text_alignment = TextAlignment {
-        vertical: VerticalAlign::Center,
-        horizontal: HorizontalAlign::Center,
-    };
-    for (mut text, RegionId(id)) in &mut query.iter_mut() {
-        for (enemy, RegionId(region_id)) in &mut query_enemy.iter() {
-            if id == region_id {
-                text.set(Box::new(Text::with_section(
-                    format!("\n{}/{}", enemy.cur_hp, enemy.max_hp),
-                    text_style.clone(),
-                    text_alignment,
-                )))
-                .unwrap();
-            }
-        }
-    }
-}
+// fn fill_enemy_text_system(
+//     asset_server: Res<AssetServer>,
+//     mut query: Query<(&mut Text, &RegionId), Added<EnemyText>>,
+//     query_enemy: Query<(&EnemyStatus, &RegionId)>,
+// ) {
+//     let font = asset_server.load("fonts/hanti.ttf");
+//     let text_style = TextStyle {
+//         font,
+//         font_size: 16.0,
+//         color: Color::WHITE,
+//     };
+//     let text_alignment = TextAlignment {
+//         vertical: VerticalAlign::Center,
+//         horizontal: HorizontalAlign::Center,
+//     };
+//     for (mut text, RegionId(id)) in &mut query.iter_mut() {
+//         for (enemy, RegionId(region_id)) in &mut query_enemy.iter() {
+//             if id == region_id {
+//                 text.set(Box::new(Text::with_section(
+//                     format!("\n{}/{}", enemy.cur_hp, enemy.max_hp),
+//                     text_style.clone(),
+//                     text_alignment,
+//                 )))
+//                 .unwrap();
+//             }
+//         }
+//     }
+// }
 
 fn fill_value_text_system(
     asset_server: Res<AssetServer>,
@@ -319,9 +319,9 @@ fn current_world_mouse(
     mut commands: Commands,
 ) {
     if let Some(wnd) = windows.get_primary_mut() {
-        if wnd.cursor_visible() {
-            wnd.set_cursor_visibility(false);
-        }
+        // if wnd.cursor_visible() {
+        //     wnd.set_cursor_visibility(false);
+        // }
         if let Some(pos) = wnd.cursor_position() {
             let size = Vec2::new(wnd.width() as f32, wnd.height() as f32);
             let p = pos - size / 2.0;
@@ -365,18 +365,18 @@ fn update_cursor_texture(
 }
 
 fn setup(mut commands: Commands, ui_image_assets: Res<UIImageAssets>) {
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: ui_image_assets.icon_cursor1.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(32.0, 32.0)),
-                color: Color::WHITE,
+    // commands
+    //     .spawn_bundle(SpriteBundle {
+    //         texture: ui_image_assets.icon_cursor1.clone(),
+    //         sprite: Sprite {
+    //             custom_size: Some(Vec2::new(32.0, 32.0)),
+    //             color: Color::WHITE,
 
-                ..default()
-            },
-            ..default()
-        })
-        .insert(Cursor);
+    //             ..default()
+    //         },
+    //         ..default()
+    //     })
+    //     .insert(Cursor);
 }
 
 fn play_audio_system(

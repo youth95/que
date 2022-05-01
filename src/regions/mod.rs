@@ -11,6 +11,7 @@ pub use self::region_entity_map::{CurrentOverRegion, RegionEntityMap};
 use self::renderer::RegionRenderPlugin;
 use bevy::prelude::Plugin;
 pub use pure::RegionMark;
+pub use renderer::WorldMouse;
 
 pub struct RegionPlugin;
 

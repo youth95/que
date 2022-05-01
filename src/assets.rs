@@ -28,7 +28,6 @@ pub struct MonsterImageAssets {
     pub icons: Vec<Handle<Image>>,
 }
 
-
 #[derive(AssetCollection)]
 pub struct UIImageAssets {
     #[asset(path = "textures/ui/icons/icon_ATK.png")]
@@ -39,6 +38,12 @@ pub struct UIImageAssets {
     pub icon_gold: Handle<Image>,
     #[asset(path = "textures/ui/icons/icon_HP.png")]
     pub icon_hp: Handle<Image>,
+
+    #[asset(path = "textures/ui/components/status_hub_panel.png")]
+    pub status_hub_panel: Handle<Image>,
+
+    #[asset(path = "textures/ui/components/battle_panel.png")]
+    pub battle_panel: Handle<Image>,
 
     #[asset(path = "textures/ui/icons/cursor1.png")]
     pub icon_cursor1: Handle<Image>,
