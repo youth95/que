@@ -22,7 +22,7 @@ impl RNG {
 
     pub fn random_range_i64(&mut self, min: i64, max: i64) -> (u64, i64) {
         let (times, value) = self.random();
-        (times, (value as i64 * (max - min + 1) as i64) as i64 + min)
+        (times, (value * (max - min + 1) as f64) as i64 + min)
     }
 
     pub fn random_val_boolean(&mut self, val: f64) -> (u64, bool) {

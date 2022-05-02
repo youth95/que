@@ -8,7 +8,7 @@
     ],
   ),1),
   ((
-    name: "祝",
+    name: "棍",
     image_label: "textures/values/empty.png",
     intro: "一根木棍",
     values: [
@@ -20,7 +20,7 @@
     image_label: "textures/values/empty.png",
     intro: "一口山泉",
     values: [
-      PlayerCurrentHp(Fixed(1)),
+      PlayerCurrentHp(Float(2,12)),
     ],
   ),1),
   ((
@@ -28,7 +28,7 @@
     image_label: "textures/values/empty.png",
     intro: "一些魂魄",
     values: [
-      PlayerGold(Fixed(1)),
+      PlayerGold(Float(1,4)),
     ],
   ),1),
 ])

@@ -41,7 +41,6 @@ fn update_region_panel_visibly<P: Component, C: Component>(
         match current_over_region.as_ref() {
             CurrentOverRegion::None => set(false),
             CurrentOverRegion::Region(id) => {
-                info!("{}", id);
                 if let Some(entity) = region_entity_map.0.get(id) {
                     if let Ok(status) =
                         region_mark_status_query.get_component::<RegionStatus>(*entity)
