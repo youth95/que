@@ -6,7 +6,7 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy_asset_loader = "0.10"
+bevy_asset_loader = {version = "0.10", features = ["2d"]}
 bevy_console = "0.3.0"
 bevy_mod_debugdump = "0.4"
 bevy_ninepatch = "0.7.0"

@@ -22,3 +22,6 @@ pub struct ChangeEnemyHpEvent(pub u64, pub i64);
 // 区域状态改变事件
 #[derive(Debug)]
 pub struct ChangeRegionStatusEvent(pub u64, pub RegionStatus);
+
+
+pub struct AtkMonsterWithPlayerSkill(pub u64);

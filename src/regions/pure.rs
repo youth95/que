@@ -19,7 +19,7 @@ use crate::{
 };
 
 use super::{
-    events::{AudioSound, MouseOverEmpty, MouseOverRegionEvent, PlayAudioEvent},
+    events::{AudioSound, MouseOverEmpty, MouseOverRegionEvent, PlayAudioEvent, AtkMonsterWithPlayerSkill},
     manager::Tile,
     region_entity_map::{CurrentOverRegion, RegionEntityMap},
     renderer::WorldMouse,
@@ -37,6 +37,7 @@ impl Plugin for RegionPurePlugin {
             .add_event::<ChangeRegionStatusEvent>()
             .add_event::<MouseOverEmpty>()
             .add_event::<MouseOverRegionEvent>()
+            .add_event::<AtkMonsterWithPlayerSkill>()
             .init_resource::<PlayerStatus>()
             .init_resource::<WorldMouse>()
             .init_resource::<Regions>()
@@ -128,16 +129,18 @@ pub fn atk_monster(
     query: Query<(&RegionId, &RegionStatus, &EnemyStatus)>,
     mut trigger_region_event: EventReader<RegionClickEvent>,
     mut change_enemy_hp_event: EventWriter<ChangeEnemyHpEvent>,
+    mut atk_monster_with_player_skill: EventWriter<AtkMonsterWithPlayerSkill>,
     mut play_audio_event: EventWriter<PlayAudioEvent>,
 ) {
     for RegionClickEvent(id) in trigger_region_event.iter() {
         for (RegionId(region_id), region_status, enemy) in query.iter() {
             if region_id == id {
                 if *region_status == RegionStatus::Found {
-                    change_enemy_hp_event
-                        .send(ChangeEnemyHpEvent(*id, -(player_status.atk - enemy.def)));
-                    player_status.cur_hp -= (enemy.atk - player_status.def).max(0);
-                    play_audio_event.send(PlayAudioEvent(AudioSound::Dao5));
+                    atk_monster_with_player_skill.send(AtkMonsterWithPlayerSkill(*id));
+                    // change_enemy_hp_event
+                    //     .send(ChangeEnemyHpEvent(*id, -(player_status.atk - enemy.def)));
+                    // player_status.cur_hp -= (enemy.atk - player_status.def).max(0);
+                    // play_audio_event.send(PlayAudioEvent(AudioSound::Dao5));
                 }
             }
         }

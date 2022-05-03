@@ -11,6 +11,15 @@ pub struct AudioAssets {
 }
 
 #[derive(AssetCollection)]
+pub struct FontAssets {
+    #[asset(path = "fonts/hanti.ttf")]
+    pub hanti: Handle<Font>,
+
+    #[asset(path = "fonts/FiraSans-Bold.ttf")]
+    pub bold: Handle<Font>,
+}
+
+#[derive(AssetCollection)]
 pub struct MonsterImageAssets {
     #[asset(path = "textures/monsters/m0.png")]
     pub m0: Handle<Image>,
@@ -53,4 +62,13 @@ pub struct UIImageAssets {
 
     #[asset(path = "textures/ui/icons/cursor2.png")]
     pub icon_cursor2: Handle<Image>,
+
+    #[asset(path = "textures/ui/components/skill_block_normal.png")]
+    pub skill_block_normal: Handle<Image>,
+
+    #[asset(path = "textures/ui/components/skill_block_active.png")]
+    pub skill_block_active: Handle<Image>,
+
+    #[asset(path = "textures/ui/skill_icons", folder(typed))]
+    pub _skill_icons: Vec<Handle<Image>>,
 }
