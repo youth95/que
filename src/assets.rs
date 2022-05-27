@@ -33,8 +33,27 @@ pub struct MonsterImageAssets {
     #[asset(path = "textures/values/empty.png")]
     pub empty: Handle<Image>,
 
-    #[asset(path = "textures/monster_icons", folder(typed))]
-    pub icons: Vec<Handle<Image>>,
+
+    #[asset(path = "textures/monster_icons/monster (m0).png")]
+    _m0: Handle<Image>,
+    #[asset(path = "textures/monster_icons/monster (m1).png")]
+    _m1: Handle<Image>,
+    #[asset(path = "textures/monster_icons/monster (m2).png")]
+    _m2: Handle<Image>,
+    #[asset(path = "textures/monster_icons/monster (m3).png")]
+    _m3: Handle<Image>,
+
+    // #[asset(path = "textures/values/empty.png")]
+    // pub empty: Handle<Image>,
+
+    // #[asset(path = "textures/values/empty.png")]
+    // pub empty: Handle<Image>,
+
+    // #[asset(path = "textures/values/empty.png")]
+    // pub empty: Handle<Image>,
+
+    // #[asset(path = "textures/monster_icons", folder(typed))]
+    // pub icons: Vec<Handle<Image>>,
 }
 
 #[derive(AssetCollection)]
@@ -69,6 +88,12 @@ pub struct UIImageAssets {
     #[asset(path = "textures/ui/components/skill_block_active.png")]
     pub skill_block_active: Handle<Image>,
 
-    #[asset(path = "textures/ui/skill_icons", folder(typed))]
-    pub _skill_icons: Vec<Handle<Image>>,
+    // #[asset(path = "textures/ui/skill_icons", folder(typed))]
+    // _skill_icons: Vec<Handle<Image>>,
+
+    #[asset(path = "textures/ui/skill_icons/skill_icon1.png")]
+    pub _s1: Handle<Image>,
+
+    #[asset(path = "textures/ui/skill_icons/skill_icon2.png")]
+    pub _s2: Handle<Image>,
 }
