@@ -6,6 +6,7 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bevy-web-resizer = "2.0.0"
 bevy_asset_loader = {version = "0.10", features = ["2d"]}
 bevy_console = "0.3"
 bevy_mod_debugdump = "0.4"
@@ -16,6 +17,7 @@ lazy_static = "1.4"
 rand = "0.8"
 ron = "0.7"
 serde = {version = "1", features = ["derive"]}
+wasm-bindgen = "0.2.74"
 
 [dependencies.bevy]
 default-features = false
@@ -36,6 +38,16 @@ features = [
   "wav", # "flac",
   "mp3", # "ogg",
 ]
+
+[dependencies.web-sys]
+features = [
+  # 'Document',
+  # 'Element',
+  # 'HtmlElement',
+  # 'Node',
+  'Window',
+]
+version = "0.3.4"
 
 [profile.dev]
 opt-level = 1

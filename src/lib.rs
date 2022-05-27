@@ -16,7 +16,7 @@ pub mod regions;
 pub mod rng;
 
 pub use assets::AudioAssets;
-use assets::{MonsterImageAssets, UIImageAssets, FontAssets};
+use assets::{FontAssets, MonsterImageAssets, UIImageAssets};
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::*,
@@ -77,5 +77,10 @@ pub fn app() -> App {
     .add_plugin(FrameTimeDiagnosticsPlugin)
     .add_plugin(LogDiagnosticsPlugin::default())
     .add_plugin(GamePlugin);
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        app.add_plugin(bevy_web_resizer::Plugin);
+    }
     app
 }
