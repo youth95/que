@@ -93,7 +93,6 @@ fn spawn_region_rect(
                     .insert(region_id);
                 // enemy current_hp_text
                 let icon = asset_server.get_handle(label.icon.as_str());
-                info!("{:?}", icon);
 
                 commands
                     .spawn_bundle(SpriteBundle::default())
