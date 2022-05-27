@@ -9,6 +9,7 @@ version = "0.1.0"
 bevy-web-resizer = "2.0.0"
 bevy_asset_loader = {version = "0.10", features = ["2d"]}
 bevy_console = "0.3"
+bevy_embedded_assets = "0.3"
 bevy_mod_debugdump = "0.4"
 bevy_ninepatch = "0.7"
 bevy_prototype_lyon = "0.5"

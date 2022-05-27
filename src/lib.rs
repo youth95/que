@@ -30,6 +30,7 @@ use player_skill::PlayerSkillPlugin;
 use regions::RegionPlugin;
 
 use bevy_asset_loader::AssetLoader;
+use bevy_embedded_assets::EmbeddedAssetPlugin;
 
 pub struct GamePlugin;
 
@@ -70,7 +71,9 @@ pub fn app() -> App {
         height: 768.,
         ..Default::default()
     })
-    .add_plugins(DefaultPlugins)
+    .add_plugins_with(DefaultPlugins, |group| {
+        group.add_before::<bevy::asset::AssetPlugin, _>(EmbeddedAssetPlugin)
+    })
     .add_plugin(LogDiagnosticsPlugin::default())
     .add_plugin(GamePlugin);
 
