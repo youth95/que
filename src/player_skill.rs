@@ -33,9 +33,9 @@ pub struct PlayerSkills {
 }
 
 #[derive(Clone)]
-struct Skill {
-    name: String,
-    description: String,
+pub struct Skill {
+    pub name: String,
+    pub description: String,
     icon: String,
     event: SkillEvent,
     cd: u32,       // 冷却时间

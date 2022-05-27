@@ -17,10 +17,7 @@ pub mod rng;
 
 pub use assets::AudioAssets;
 use assets::{FontAssets, MonsterImageAssets, UIImageAssets};
-use bevy::{
-    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
-    prelude::*,
-};
+use bevy::{diagnostic::LogDiagnosticsPlugin, prelude::*};
 use bevy_kira_audio::AudioPlugin;
 use bevy_ninepatch::*;
 pub use camera::CameraPlugin;
@@ -79,7 +76,7 @@ pub fn app() -> App {
 
     #[cfg(not(target_arch = "wasm32"))]
     {
-        app.add_plugin(FrameTimeDiagnosticsPlugin);
+        app.add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin);
     }
     #[cfg(target_arch = "wasm32")]
     {

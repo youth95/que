@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_kira_audio::Audio;
 
-use crate::assets::UIImageAssets;
 use crate::camera::SceneCamera;
 use crate::marks::{EnemyLabel, EnemyMark, RegionId, RegionRect, ValueText};
 use crate::pool::values::Value;
@@ -22,7 +21,8 @@ const GAP: f32 = 4.;
 
 impl Plugin for RegionRenderPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_system_set(SystemSet::on_enter(GameStage::Main).with_system(setup))
+        app
+            // .add_system_set(SystemSet::on_enter(GameStage::Main).with_system(setup))
             .add_system_set(
                 SystemSet::on_update(GameStage::Main)
                     // .with_system(update_cursor_texture)
@@ -336,49 +336,6 @@ fn current_world_mouse(
 
 #[derive(Component)]
 struct Cursor;
-
-fn update_cursor_pos(mut query: Query<&mut Transform, With<Cursor>>, world_mouse: Res<WorldMouse>) {
-    if world_mouse.is_changed() {
-        for mut transform in query.iter_mut() {
-            let mut pos = world_mouse.0.clone();
-            pos.z = 99.;
-            transform.translation = pos;
-        }
-    }
-}
-
-fn update_cursor_texture(
-    mut query: Query<&mut Handle<Image>, With<Cursor>>,
-    ui_image_assets: Res<UIImageAssets>,
-    buttons: Res<Input<MouseButton>>,
-) {
-    for mut handle in query.iter_mut() {
-        if buttons.pressed(MouseButton::Left) {
-            handle
-                .set(Box::new(ui_image_assets.icon_cursor2.clone()))
-                .unwrap();
-        } else {
-            handle
-                .set(Box::new(ui_image_assets.icon_cursor1.clone()))
-                .unwrap();
-        }
-    }
-}
-
-fn setup(mut commands: Commands, ui_image_assets: Res<UIImageAssets>) {
-    // commands
-    //     .spawn_bundle(SpriteBundle {
-    //         texture: ui_image_assets.icon_cursor1.clone(),
-    //         sprite: Sprite {
-    //             custom_size: Some(Vec2::new(32.0, 32.0)),
-    //             color: Color::WHITE,
-
-    //             ..default()
-    //         },
-    //         ..default()
-    //     })
-    //     .insert(Cursor);
-}
 
 fn play_audio_system(
     audio: Res<Audio>,

@@ -19,7 +19,9 @@ use crate::{
 };
 
 use super::{
-    events::{AudioSound, MouseOverEmpty, MouseOverRegionEvent, PlayAudioEvent, AtkMonsterWithPlayerSkill},
+    events::{
+        AtkMonsterWithPlayerSkill, AudioSound, MouseOverEmpty, MouseOverRegionEvent, PlayAudioEvent,
+    },
     manager::Tile,
     region_entity_map::{CurrentOverRegion, RegionEntityMap},
     renderer::WorldMouse,
@@ -125,45 +127,21 @@ pub fn spawn_region_system(
 }
 
 pub fn atk_monster(
-    mut player_status: ResMut<PlayerStatus>,
-    query: Query<(&RegionId, &RegionStatus, &EnemyStatus)>,
+    query: Query<(&RegionId, &RegionStatus)>,
     mut trigger_region_event: EventReader<RegionClickEvent>,
-    mut change_enemy_hp_event: EventWriter<ChangeEnemyHpEvent>,
     mut atk_monster_with_player_skill: EventWriter<AtkMonsterWithPlayerSkill>,
-    mut play_audio_event: EventWriter<PlayAudioEvent>,
 ) {
     for RegionClickEvent(id) in trigger_region_event.iter() {
-        for (RegionId(region_id), region_status, enemy) in query.iter() {
+        for (RegionId(region_id), region_status) in query.iter() {
             if region_id == id {
                 if *region_status == RegionStatus::Found {
                     atk_monster_with_player_skill.send(AtkMonsterWithPlayerSkill(*id));
-                    // change_enemy_hp_event
-                    //     .send(ChangeEnemyHpEvent(*id, -(player_status.atk - enemy.def)));
-                    // player_status.cur_hp -= (enemy.atk - player_status.def).max(0);
-                    // play_audio_event.send(PlayAudioEvent(AudioSound::Dao5));
                 }
             }
         }
     }
 }
 
-// pub fn click_region_effect(
-//     world_mouse: Res<WorldMouse>,
-//     mut trigger_region_event: EventReader<RegionClickEvent>,
-//     mut commands: Commands,
-// ) {
-//     for RegionClickEvent(_) in trigger_region_event.iter() {
-//         for _ in 0..60 {
-//             commands
-//                 .spawn()
-//                 .as_particle(Transform::from_translation(Vec3::new(
-//                     world_mouse.0.x,
-//                     world_mouse.0.y,
-//                     99.,
-//                 )));
-//         }
-//     }
-// }
 
 pub fn visit_region(
     query: Query<(&RegionId, &RegionStatus), Without<EnemyMark>>,
