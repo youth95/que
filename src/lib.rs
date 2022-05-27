@@ -74,10 +74,13 @@ pub fn app() -> App {
         ..Default::default()
     })
     .add_plugins(DefaultPlugins)
-    .add_plugin(FrameTimeDiagnosticsPlugin)
     .add_plugin(LogDiagnosticsPlugin::default())
     .add_plugin(GamePlugin);
 
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        app.add_plugin(FrameTimeDiagnosticsPlugin);
+    }
     #[cfg(target_arch = "wasm32")]
     {
         app.add_plugin(bevy_web_resizer::Plugin);
