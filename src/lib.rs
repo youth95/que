@@ -1,6 +1,7 @@
 #[macro_use]
 pub extern crate lazy_static;
 pub extern crate serde;
+pub extern crate bevy;
 
 mod camera;
 pub mod components;
