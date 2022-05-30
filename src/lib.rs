@@ -83,9 +83,9 @@ pub fn app() -> App {
     {
         app.add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin);
     }
-    #[cfg(target_arch = "wasm32")]
-    {
-        app.add_plugin(bevy_web_resizer::Plugin);
-    }
+    // #[cfg(target_arch = "wasm32")]
+    // {
+    //     app.add_plugin(bevy_web_resizer::Plugin);
+    // }
     app
 }
