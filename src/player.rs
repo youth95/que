@@ -72,7 +72,7 @@ fn setup(
     mut nine_patches: ResMut<Assets<NinePatchBuilder<()>>>,
 ) {
     // UI camera
-    commands.spawn_bundle(UiCameraBundle::default());
+    commands.spawn_bundle(Camera2dBundle::default());
     commands.insert_resource(PlayerStatus::default());
     // player status hub
     // TODO 加底图
@@ -83,7 +83,7 @@ fn setup(
             color: Color::NONE.into(),
             style: Style {
                 justify_content: JustifyContent::SpaceBetween,
-                padding: Rect::all(Val::Px(5.0)),
+                padding: UiRect::all(Val::Px(5.0)),
                 align_items: AlignItems::Center,
                 ..default()
             },
@@ -100,7 +100,7 @@ fn setup(
                     parent.spawn_bundle(ImageBundle {
                         style: Style {
                             size: Size::new(Val::Px(16.0), Val::Px(16.0)),
-                            margin: Rect {
+                            margin: UiRect {
                                 right: Val::Px(4.0),
                                 ..default()
                             },
@@ -144,7 +144,7 @@ fn setup(
                     parent.spawn_bundle(ImageBundle {
                         style: Style {
                             size: Size::new(Val::Px(16.0), Val::Px(16.0)),
-                            margin: Rect {
+                            margin: UiRect {
                                 right: Val::Px(4.0),
                                 ..default()
                             },
@@ -180,7 +180,7 @@ fn setup(
                     parent.spawn_bundle(ImageBundle {
                         style: Style {
                             size: Size::new(Val::Px(16.0), Val::Px(16.0)),
-                            margin: Rect {
+                            margin: UiRect {
                                 right: Val::Px(4.0),
                                 ..default()
                             },
@@ -224,7 +224,7 @@ fn setup(
                     parent.spawn_bundle(ImageBundle {
                         style: Style {
                             size: Size::new(Val::Px(16.0), Val::Px(16.0)),
-                            margin: Rect {
+                            margin: UiRect {
                                 right: Val::Px(4.0),
                                 ..default()
                             },
@@ -264,7 +264,7 @@ fn setup(
         style: Style {
             size: Size::new(Val::Percent(100.0), Val::Px(32.0)),
             position_type: PositionType::Absolute,
-            position: Rect {
+            position: UiRect {
                 left: Val::Px(0.0),
                 top: Val::Px(0.0),
                 ..default()
@@ -286,8 +286,8 @@ fn setup(
                 flex_direction: FlexDirection::Column,
                 justify_content: JustifyContent::FlexStart,
                 position_type: PositionType::Absolute,
-                padding: Rect::all(Val::Px(10.0)),
-                position: Rect {
+                padding: UiRect::all(Val::Px(10.0)),
+                position: UiRect {
                     right: Val::Px(0.0),
                     top: Val::Px(0.0),
                     ..default()

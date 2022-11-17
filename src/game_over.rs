@@ -14,7 +14,7 @@ fn cleanup(asset_server: Res<AssetServer>, query: Query<Entity>, mut commands: C
     for entity in query.iter() {
         commands.entity(entity).despawn();
     }
-    commands.spawn_bundle(UiCameraBundle::default());
+    commands.spawn_bundle(Camera2dBundle::default());
 
     let style = TextStyle {
         font: asset_server.load("fonts/hanti.ttf"),
@@ -45,7 +45,7 @@ fn cleanup(asset_server: Res<AssetServer>, query: Query<Entity>, mut commands: C
             parent
                 .spawn_bundle(ButtonBundle {
                     style: Style {
-                        padding: Rect::all(Val::Px(20.)),
+                        padding: UiRect::all(Val::Px(20.)),
                         ..Default::default()
                     },
                     color: Color::GREEN.into(),

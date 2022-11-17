@@ -16,8 +16,9 @@ fn main() {
     );
     std::fs::write("render_schedule_graph.dot", render_schedule_graph).unwrap();
 
-    let render_app = _app.get_sub_app(RenderApp).expect("no render app");
-    let render_graph = render_app.world.get_resource::<RenderGraph>().unwrap();
-    let render_graph_dot = bevy_mod_debugdump::render_graph::render_graph_dot(&*render_graph);
-    std::fs::write("render_graph.dot", render_graph_dot).unwrap();
+
+    // let render_app = _app.get_sub_app(RenderApp).expect("no render app");
+    // let render_graph = render_app.world.get_resource::<RenderGraph>().unwrap();
+    // let render_graph_dot = bevy_mod_debugdump::render_graph::render_graph_dot(&*render_graph);
+    // std::fs::write("render_graph.dot", render_graph_dot).unwrap();
 }

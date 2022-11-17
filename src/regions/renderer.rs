@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_kira_audio::Audio;
+use bevy_kira_audio::{Audio, AudioControl};
 
 use crate::camera::SceneCamera;
 use crate::marks::{EnemyLabel, EnemyMark, RegionId, RegionRect, ValueText};
@@ -212,11 +212,10 @@ fn fill_value_text_system(
     for (mut text, RegionId(id)) in &mut query.iter_mut() {
         for (RegionId(region_id), value) in query_value.iter() {
             if id == region_id {
-                text.set(Box::new(Text::with_section(
-                    format!("{}", value.name),
-                    text_style.clone(),
-                    text_alignment,
-                )))
+                text.set(Box::new(
+                    Text::from_section(format!("{}", value.name), text_style.clone())
+                        .with_alignment(text_alignment),
+                ))
                 .unwrap();
             }
         }

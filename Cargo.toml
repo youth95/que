@@ -7,23 +7,23 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy-web-resizer = "2.0.0"
-bevy_asset_loader = {version = "0.10", features = ["2d"]}
-bevy_console = "0.3"
-bevy_embedded_assets = "0.3"
-bevy_mod_debugdump = "0.4"
-bevy_ninepatch = "0.7"
-bevy_prototype_lyon = "0.5"
+bevy-web-resizer = "4.0.0"
+bevy_asset_loader = {version = "0.13.0", features = ["2d"]}
+bevy_console = "0.4.0"
+bevy_embedded_assets = "0.4"
+bevy_mod_debugdump = "0.5"
+bevy_ninepatch = "0.8"
+bevy_prototype_lyon = "0.6.0"
 interpolation = "0.2"
 lazy_static = "1.4"
 rand = "0.8"
-ron = "0.7"
+ron = "0.8.0"
 serde = {version = "1", features = ["derive"]}
 wasm-bindgen = "0.2.74"
 
 [dependencies.bevy]
 default-features = false
-version = "0.7"
+version = "0.8"
 # These are the remaining default features other than `bevy_audio` and `mp3`
 features = [
   "render",
@@ -32,7 +32,7 @@ features = [
 ]
 
 [dependencies.bevy_kira_audio]
-version = "0.10"
+version = "0.12.0"
 # `ogg` format support is enabled by default, disable if you don't want it
 default-features = false
 # enable the features you care about
@@ -49,7 +49,7 @@ features = [
   # 'Node',
   'Window',
 ]
-version = "0.3.4"
+version = "0.3.58"
 
 [profile.dev]
 opt-level = 1

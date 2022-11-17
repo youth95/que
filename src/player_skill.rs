@@ -92,7 +92,7 @@ pub fn update_player_skill(
                 style: Style {
                     size: Size::new(Val::Percent(100.), Val::Px(48.)),
                     position_type: PositionType::Absolute,
-                    position: Rect {
+                    position: UiRect {
                         bottom: Val::Px(10.),
                         left: Val::Px(0.),
                         ..default()
@@ -111,7 +111,7 @@ pub fn update_player_skill(
                             size: Size::new(Val::Px(34.0 * skill_count as f32), Val::Px(44.)),
                             justify_content: JustifyContent::SpaceBetween,
                             align_self: AlignSelf::Center,
-                            margin: Rect::all(Val::Auto),
+                            margin: UiRect::all(Val::Auto),
                             ..default()
                         },
                         color: Color::NONE.into(),
@@ -159,7 +159,7 @@ pub fn update_player_skill(
                                                         //     left: Val::Px(0.),
                                                         //     ..default()
                                                         // },
-                                                        margin: Rect::all(Val::Auto),
+                                                        margin: UiRect::all(Val::Auto),
                                                         ..default()
                                                     },
                                                     image: icon.into(),
