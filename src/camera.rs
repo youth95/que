@@ -15,7 +15,7 @@ impl Plugin for CameraPlugin {
 
 fn setup(mut commands: Commands) {
     commands
-        .spawn_bundle(Camera2dBundle::default())
+        .spawn(Camera2dBundle::default())
         .insert(SceneCamera);
 }
 

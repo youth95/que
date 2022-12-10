@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::AudioSource;
 
-#[derive(AssetCollection)]
+#[derive(AssetCollection, Resource)]
 pub struct AudioAssets {
     #[asset(path = "sounds/click.wav")]
     pub click: Handle<AudioSource>,
@@ -10,7 +10,7 @@ pub struct AudioAssets {
     pub dao5: Handle<AudioSource>,
 }
 
-#[derive(AssetCollection)]
+#[derive(AssetCollection, Resource)]
 pub struct FontAssets {
     #[asset(path = "fonts/hanti.ttf")]
     pub hanti: Handle<Font>,
@@ -19,7 +19,7 @@ pub struct FontAssets {
     pub bold: Handle<Font>,
 }
 
-#[derive(AssetCollection)]
+#[derive(AssetCollection, Resource)]
 pub struct MonsterImageAssets {
     #[asset(path = "textures/monsters/m0.png")]
     pub m0: Handle<Image>,
@@ -33,7 +33,6 @@ pub struct MonsterImageAssets {
     #[asset(path = "textures/values/empty.png")]
     pub empty: Handle<Image>,
 
-
     #[asset(path = "textures/monster_icons/monster (m0).png")]
     _m0: Handle<Image>,
     #[asset(path = "textures/monster_icons/monster (m1).png")]
@@ -42,7 +41,6 @@ pub struct MonsterImageAssets {
     _m2: Handle<Image>,
     #[asset(path = "textures/monster_icons/monster (m3).png")]
     _m3: Handle<Image>,
-
     // #[asset(path = "textures/values/empty.png")]
     // pub empty: Handle<Image>,
 
@@ -56,7 +54,7 @@ pub struct MonsterImageAssets {
     // pub icons: Vec<Handle<Image>>,
 }
 
-#[derive(AssetCollection)]
+#[derive(AssetCollection, Resource)]
 pub struct UIImageAssets {
     #[asset(path = "textures/ui/icons/icon_ATK.png")]
     pub icon_atk: Handle<Image>,
@@ -90,7 +88,6 @@ pub struct UIImageAssets {
 
     // #[asset(path = "textures/ui/skill_icons", folder(typed))]
     // _skill_icons: Vec<Handle<Image>>,
-
     #[asset(path = "textures/ui/skill_icons/skill_icon1.png")]
     pub _s1: Handle<Image>,
 

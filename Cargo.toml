@@ -7,13 +7,13 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy-web-resizer = "4.0.0"
-bevy_asset_loader = {version = "0.13.0", features = ["2d"]}
+bevy-web-resizer = "4.0.1"
+bevy_asset_loader = {version = "0.14.1", features = ["2d"]}
 bevy_console = "0.4.0"
-bevy_embedded_assets = "0.4"
-bevy_mod_debugdump = "0.5"
-bevy_ninepatch = "0.8"
-bevy_prototype_lyon = "0.6.0"
+bevy_embedded_assets = "0.6.1"
+bevy_mod_debugdump = "0.6"
+bevy_ninepatch = "0.9.1"
+bevy_prototype_lyon = "0.7"
 interpolation = "0.2"
 lazy_static = "1.4"
 rand = "0.8"
@@ -23,7 +23,7 @@ wasm-bindgen = "0.2.74"
 
 [dependencies.bevy]
 default-features = false
-version = "0.8"
+version = "0.9.1"
 # These are the remaining default features other than `bevy_audio` and `mp3`
 features = [
   "render",
@@ -32,7 +32,7 @@ features = [
 ]
 
 [dependencies.bevy_kira_audio]
-version = "0.12.0"
+version = "0.13.0"
 # `ogg` format support is enabled by default, disable if you don't want it
 default-features = false
 # enable the features you care about
@@ -51,13 +51,13 @@ features = [
 ]
 version = "0.3.58"
 
-[profile.dev]
-opt-level = 1
+# [profile.dev]
+# opt-level = 2
 
 # Enable high optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package."*"]
-opt-level = 3
+opt-level = 1
 
-[profile.release]
-lto = true
-opt-level = 'z'
+# [profile.release]
+# lto = true
+# opt-level = 'z'

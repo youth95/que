@@ -14,7 +14,7 @@ fn cleanup(asset_server: Res<AssetServer>, query: Query<Entity>, mut commands: C
     for entity in query.iter() {
         commands.entity(entity).despawn();
     }
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
 
     let style = TextStyle {
         font: asset_server.load("fonts/hanti.ttf"),
@@ -29,7 +29,7 @@ fn cleanup(asset_server: Res<AssetServer>, query: Query<Entity>, mut commands: C
     };
 
     commands
-        .spawn_bundle(NodeBundle {
+        .spawn(NodeBundle {
             style: Style {
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
@@ -38,21 +38,21 @@ fn cleanup(asset_server: Res<AssetServer>, query: Query<Entity>, mut commands: C
                 size: Size::new(Val::Percent(100.), Val::Percent(100.)),
                 ..Default::default()
             },
-            color: Color::NONE.into(),
+            background_color: Color::NONE.into(),
             ..Default::default()
         })
         .with_children(|parent| {
             parent
-                .spawn_bundle(ButtonBundle {
+                .spawn(ButtonBundle {
                     style: Style {
                         padding: UiRect::all(Val::Px(20.)),
                         ..Default::default()
                     },
-                    color: Color::GREEN.into(),
+                    background_color: Color::GREEN.into(),
                     ..Default::default()
                 })
                 .with_children(|parent| {
-                    parent.spawn_bundle(TextBundle {
+                    parent.spawn(TextBundle {
                         style: Style {
                             ..Default::default()
                         },
@@ -71,7 +71,7 @@ fn cleanup(asset_server: Res<AssetServer>, query: Query<Entity>, mut commands: C
                         ..Default::default()
                     });
                 });
-            parent.spawn_bundle(TextBundle {
+            parent.spawn(TextBundle {
                 style: Style {
                     ..Default::default()
                 },

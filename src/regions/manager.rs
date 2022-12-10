@@ -4,9 +4,9 @@ use std::iter::FromIterator;
 
 use crate::components::TileType;
 use crate::pool::Pool;
-use bevy::math::Vec3;
 use bevy::prelude::Transform;
 use bevy::utils::HashSet;
+use bevy::{math::Vec3, prelude::Resource};
 
 use super::super::pool::terrains::{AxisDirection, PlaneOrientation, Point};
 
@@ -64,7 +64,7 @@ impl Tile {
     }
 }
 
-#[derive(Debug)]
+#[derive(Resource, Debug)]
 pub struct Regions {
     pub inc_id: u64,
     pub scope: (i64, i64),

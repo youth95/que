@@ -98,8 +98,7 @@ pub fn spawn_region_system(
             _ => RegionStatus::Mist,
         };
         let entity = commands
-            .spawn()
-            .insert(RegionMark)
+            .spawn(RegionMark)
             .insert(RegionId(region.id))
             .insert(region_status)
             .id();
@@ -141,7 +140,6 @@ pub fn atk_monster(
         }
     }
 }
-
 
 pub fn visit_region(
     query: Query<(&RegionId, &RegionStatus), Without<EnemyMark>>,

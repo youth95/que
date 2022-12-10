@@ -60,8 +60,7 @@ fn spawn_region_rect(
 
             // region rect
             commands
-                .spawn()
-                .insert_bundle(SpriteBundle::default())
+                .spawn(SpriteBundle::default())
                 .insert(Sprite {
                     color: Color::NONE,
                     ..default()
@@ -73,8 +72,7 @@ fn spawn_region_rect(
             if let Some(label) = label {
                 //  enemy hp color
                 commands
-                    .spawn()
-                    .insert_bundle(SpriteBundle::default())
+                    .spawn(SpriteBundle::default())
                     .insert(Transform {
                         translation: Vec3::new(
                             transform.translation.x,
@@ -95,7 +93,7 @@ fn spawn_region_rect(
                 let icon = asset_server.get_handle(label.icon.as_str());
 
                 commands
-                    .spawn_bundle(SpriteBundle::default())
+                    .spawn(SpriteBundle::default())
                     .insert(Transform {
                         translation: Vec3::new(
                             transform.translation.x,
@@ -113,7 +111,7 @@ fn spawn_region_rect(
                     .with_children(|parent| {
                         // text
                         parent
-                            .spawn_bundle(Text2dBundle {
+                            .spawn(Text2dBundle {
                                 transform: Transform {
                                     translation: Vec3::new(0., -8., 1.),
                                     ..Default::default()
@@ -125,7 +123,7 @@ fn spawn_region_rect(
                             .insert(region_id);
                         // icon
                         parent
-                            .spawn_bundle(SpriteBundle {
+                            .spawn(SpriteBundle {
                                 sprite: Sprite {
                                     color: Color::GOLD,
                                     custom_size: Some(Vec2::new(16., 16.)),
@@ -145,7 +143,7 @@ fn spawn_region_rect(
 
             if value.is_some() {
                 commands
-                    .spawn_bundle(Text2dBundle {
+                    .spawn(Text2dBundle {
                         visibility: Visibility { is_visible: false },
                         transform: Transform {
                             translation: Vec3::new(
@@ -310,7 +308,7 @@ fn mouse_interaction(
     }
 }
 
-#[derive(Default)]
+#[derive(Resource, Default)]
 pub struct WorldMouse(pub Vec3);
 
 fn current_world_mouse(

@@ -1,8 +1,12 @@
-use bevy::{prelude::Entity, utils::HashMap};
+use bevy::{
+    prelude::{Entity, Resource},
+    utils::HashMap,
+};
 
-#[derive(Default)]
+#[derive(Resource, Default)]
 pub struct RegionEntityMap(pub HashMap<u64, Entity>);
 
+#[derive(Resource)]
 pub enum CurrentOverRegion {
     None,
     Region(u64),

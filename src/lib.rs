@@ -66,15 +66,19 @@ impl Plugin for GamePlugin {
 
 pub fn app() -> App {
     let mut app = App::new();
-    app.insert_resource(WindowDescriptor {
-        title: "䧿".to_string(),
-        width: 1024.,
-        height: 768.,
-        ..Default::default()
-    })
-    .add_plugins_with(DefaultPlugins, |group| {
-        group.add_before::<bevy::asset::AssetPlugin, _>(EmbeddedAssetPlugin)
-    })
+    app.add_plugins(
+        DefaultPlugins
+            .set(WindowPlugin {
+                window: WindowDescriptor {
+                    title: "䧿".to_string(),
+                    width: 1024.,
+                    height: 768.,
+                    ..Default::default()
+                },
+                ..default()
+            })
+            .add_before::<bevy::asset::AssetPlugin, _>(EmbeddedAssetPlugin),
+    )
     .add_plugin(LogDiagnosticsPlugin::default())
     .add_plugin(GamePlugin);
 

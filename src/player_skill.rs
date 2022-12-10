@@ -28,6 +28,7 @@ impl Plugin for PlayerSkillPlugin {
 #[derive(Component)]
 pub struct SkillPanelPart;
 
+#[derive(Resource)]
 pub struct PlayerSkills {
     skills: LinkedList<Skill>,
 }
@@ -88,7 +89,7 @@ pub fn update_player_skill(
         let skill_count = player_skills.skills.len();
 
         commands
-            .spawn_bundle(NodeBundle {
+            .spawn(NodeBundle {
                 style: Style {
                     size: Size::new(Val::Percent(100.), Val::Px(48.)),
                     position_type: PositionType::Absolute,
@@ -100,13 +101,13 @@ pub fn update_player_skill(
                     ..default()
                 },
                 transform: Transform::from_scale(Vec3::new(1.5, 1.5, 1.)),
-                color: Color::NONE.into(),
+                background_color: Color::NONE.into(),
                 ..default()
             })
             .insert(SkillPanelPart)
             .with_children(|parent| {
                 parent
-                    .spawn_bundle(NodeBundle {
+                    .spawn(NodeBundle {
                         style: Style {
                             size: Size::new(Val::Px(34.0 * skill_count as f32), Val::Px(44.)),
                             justify_content: JustifyContent::SpaceBetween,
@@ -114,27 +115,27 @@ pub fn update_player_skill(
                             margin: UiRect::all(Val::Auto),
                             ..default()
                         },
-                        color: Color::NONE.into(),
+                        background_color: Color::NONE.into(),
                         ..default()
                     })
                     .insert(SkillPanelPart)
                     .with_children(|parent| {
                         for (i, skill) in player_skills.skills.iter().enumerate() {
                             parent
-                                .spawn_bundle(NodeBundle {
+                                .spawn(NodeBundle {
                                     style: Style {
                                         size: Size::new(Val::Px(32.), Val::Px(44.)),
                                         flex_direction: FlexDirection::ColumnReverse,
                                         position_type: PositionType::Relative,
                                         ..default()
                                     },
-                                    color: Color::NONE.into(),
+                                    background_color: Color::NONE.into(),
                                     ..default()
                                 })
                                 .insert(SkillPanelPart)
                                 .with_children(|parent| {
                                     parent
-                                        .spawn_bundle(ImageBundle {
+                                        .spawn(ImageBundle {
                                             style: Style {
                                                 size: Size::new(Val::Px(32.), Val::Px(32.)),
                                                 ..default()
@@ -150,7 +151,7 @@ pub fn update_player_skill(
                                         .with_children(|parent| {
                                             let icon = asset_server.get_handle(skill.icon.as_str());
                                             parent
-                                                .spawn_bundle(ImageBundle {
+                                                .spawn(ImageBundle {
                                                     style: Style {
                                                         size: Size::new(Val::Px(24.), Val::Px(24.)),
                                                         // position_type: PositionType::Absolute,
@@ -169,7 +170,7 @@ pub fn update_player_skill(
                                         });
 
                                     parent
-                                        .spawn_bundle(TextBundle {
+                                        .spawn(TextBundle {
                                             style: Style {
                                                 size: Size::new(Val::Auto, Val::Px(16.)),
                                                 align_self: AlignSelf::Center,

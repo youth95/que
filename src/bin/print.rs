@@ -1,4 +1,4 @@
-use bevy::render::{render_graph::RenderGraph, RenderApp, RenderStage};
+use bevy::render::{RenderApp, RenderStage};
 use bevy_mod_debugdump::schedule_graph;
 use que::app;
 
@@ -15,7 +15,6 @@ fn main() {
         &schedule_graph::ScheduleGraphStyle::default(),
     );
     std::fs::write("render_schedule_graph.dot", render_schedule_graph).unwrap();
-
 
     // let render_app = _app.get_sub_app(RenderApp).expect("no render app");
     // let render_graph = render_app.world.get_resource::<RenderGraph>().unwrap();

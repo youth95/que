@@ -36,7 +36,7 @@ fn setup(
     };
 
     commands
-        .spawn_bundle(SpriteBundle {
+        .spawn(SpriteBundle {
             texture: ui_image_assets.text_panel.clone_weak(),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(208.0, 160.0)),
@@ -49,7 +49,7 @@ fn setup(
         .insert(ValuePanelVisibly)
         .with_children(|parent| {
             parent
-                .spawn_bundle(Text2dBundle {
+                .spawn(Text2dBundle {
                     text: Text {
                         sections: vec![
                             TextSection {

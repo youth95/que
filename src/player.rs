@@ -30,7 +30,7 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-#[derive(Debug)]
+#[derive(Resource, Debug)]
 pub struct PlayerStatus {
     pub atk: i64,
     pub def: i64,
@@ -72,15 +72,14 @@ fn setup(
     mut nine_patches: ResMut<Assets<NinePatchBuilder<()>>>,
 ) {
     // UI camera
-    commands.spawn_bundle(Camera2dBundle::default());
     commands.insert_resource(PlayerStatus::default());
     // player status hub
     // TODO 加底图
     let nine_patch_handle = nine_patches.add(NinePatchBuilder::by_margins(10, 10, 20, 20));
 
     let status_hub_entity = commands
-        .spawn_bundle(NodeBundle {
-            color: Color::NONE.into(),
+        .spawn(NodeBundle {
+            background_color: Color::NONE.into(),
             style: Style {
                 justify_content: JustifyContent::SpaceBetween,
                 padding: UiRect::all(Val::Px(5.0)),
@@ -91,13 +90,13 @@ fn setup(
         })
         .with_children(|parent| {
             parent
-                .spawn_bundle(NodeBundle {
-                    color: Color::NONE.into(),
+                .spawn(NodeBundle {
+                    background_color: Color::NONE.into(),
                     style: Style { ..default() },
                     ..default()
                 })
                 .with_children(|parent| {
-                    parent.spawn_bundle(ImageBundle {
+                    parent.spawn(ImageBundle {
                         style: Style {
                             size: Size::new(Val::Px(16.0), Val::Px(16.0)),
                             margin: UiRect {
@@ -111,7 +110,7 @@ fn setup(
                     });
                     // hp
                     parent
-                        .spawn_bundle(TextBundle {
+                        .spawn(TextBundle {
                             style: Style {
                                 size: Size::new(Val::Auto, Val::Px(16.0)),
                                 min_size: Size::new(Val::Px(80.0), Val::Px(16.0)),
@@ -135,13 +134,13 @@ fn setup(
                 });
 
             parent
-                .spawn_bundle(NodeBundle {
-                    color: Color::NONE.into(),
+                .spawn(NodeBundle {
+                    background_color: Color::NONE.into(),
                     style: Style { ..default() },
                     ..default()
                 })
                 .with_children(|parent| {
-                    parent.spawn_bundle(ImageBundle {
+                    parent.spawn(ImageBundle {
                         style: Style {
                             size: Size::new(Val::Px(16.0), Val::Px(16.0)),
                             margin: UiRect {
@@ -155,7 +154,7 @@ fn setup(
                     });
                     // atk
                     parent
-                        .spawn_bundle(TextBundle {
+                        .spawn(TextBundle {
                             style: Style {
                                 size: Size::new(Val::Auto, Val::Px(16.0)),
                                 min_size: Size::new(Val::Px(34.0), Val::Px(16.0)),
@@ -177,7 +176,7 @@ fn setup(
                         })
                         .insert(PlayerStatusType::ATK);
 
-                    parent.spawn_bundle(ImageBundle {
+                    parent.spawn(ImageBundle {
                         style: Style {
                             size: Size::new(Val::Px(16.0), Val::Px(16.0)),
                             margin: UiRect {
@@ -191,7 +190,7 @@ fn setup(
                     });
                     // def
                     parent
-                        .spawn_bundle(TextBundle {
+                        .spawn(TextBundle {
                             style: Style {
                                 size: Size::new(Val::Auto, Val::Px(16.0)),
                                 min_size: Size::new(Val::Px(34.0), Val::Px(16.0)),
@@ -215,13 +214,13 @@ fn setup(
                 });
 
             parent
-                .spawn_bundle(NodeBundle {
-                    color: Color::NONE.into(),
+                .spawn(NodeBundle {
+                    background_color: Color::NONE.into(),
                     style: Style { ..default() },
                     ..default()
                 })
                 .with_children(|parent| {
-                    parent.spawn_bundle(ImageBundle {
+                    parent.spawn(ImageBundle {
                         style: Style {
                             size: Size::new(Val::Px(16.0), Val::Px(16.0)),
                             margin: UiRect {
@@ -235,7 +234,7 @@ fn setup(
                     });
                     // gold
                     parent
-                        .spawn_bundle(TextBundle {
+                        .spawn(TextBundle {
                             style: Style {
                                 size: Size::new(Val::Auto, Val::Px(16.0)),
                                 min_size: Size::new(Val::Px(34.0), Val::Px(16.0)),
@@ -260,7 +259,7 @@ fn setup(
         })
         .id();
 
-    commands.spawn_bundle(NinePatchBundle {
+    commands.spawn(NinePatchBundle {
         style: Style {
             size: Size::new(Val::Percent(100.0), Val::Px(32.0)),
             position_type: PositionType::Absolute,
@@ -280,7 +279,7 @@ fn setup(
     });
     // intro panel
     commands
-        .spawn_bundle(NodeBundle {
+        .spawn(NodeBundle {
             style: Style {
                 size: Size::new(Val::Percent(30.0), Val::Percent(100.0)),
                 flex_direction: FlexDirection::Column,
@@ -294,7 +293,7 @@ fn setup(
                 },
                 ..default()
             },
-            color: Color::rgba_u8(0, 0, 0, 224).into(),
+            background_color: Color::rgba_u8(0, 0, 0, 224).into(),
             visibility: Visibility { is_visible: false },
             ..default()
         })

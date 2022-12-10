@@ -42,7 +42,7 @@ fn setup(
         color,
     };
     commands
-        .spawn_bundle(SpriteBundle {
+        .spawn(SpriteBundle {
             texture: ui_image_assets.battle_panel.clone_weak(),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(208.0, 160.0)),
@@ -56,7 +56,7 @@ fn setup(
         .with_children(|parent| {
             // player
             parent
-                .spawn_bundle(SpriteBundle {
+                .spawn(SpriteBundle {
                     texture: ui_image_assets.icon_hp.clone_weak(),
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(16.0, 16.0)),
@@ -69,7 +69,7 @@ fn setup(
                 .insert(BattlePanelVisibly);
 
             parent
-                .spawn_bundle(Text2dBundle {
+                .spawn(Text2dBundle {
                     text: Text {
                         sections: vec![TextSection {
                             value: "HP".to_string(),
@@ -84,7 +84,7 @@ fn setup(
                 .insert(BattlePanelVisibly);
 
             parent
-                .spawn_bundle(Text2dBundle {
+                .spawn(Text2dBundle {
                     text: Text {
                         sections: vec![TextSection {
                             value: "ATK".to_string(),
@@ -99,7 +99,7 @@ fn setup(
                 .insert(BattlePanelVisibly);
 
             parent
-                .spawn_bundle(Text2dBundle {
+                .spawn(Text2dBundle {
                     text: Text {
                         sections: vec![TextSection {
                             value: "DEF".to_string(),
@@ -115,7 +115,7 @@ fn setup(
 
             // enemy
             parent
-                .spawn_bundle(SpriteBundle {
+                .spawn(SpriteBundle {
                     texture: ui_image_assets.icon_hp.clone_weak(),
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(16.0, 16.0)),
@@ -129,7 +129,7 @@ fn setup(
                 .insert(BattlePanelVisibly);
 
             parent
-                .spawn_bundle(Text2dBundle {
+                .spawn(Text2dBundle {
                     text: Text {
                         sections: vec![TextSection {
                             value: "HP".to_string(),
@@ -144,7 +144,7 @@ fn setup(
                 .insert(BattlePanelVisibly);
 
             parent
-                .spawn_bundle(Text2dBundle {
+                .spawn(Text2dBundle {
                     text: Text {
                         sections: vec![TextSection {
                             value: "ATK".to_string(),
@@ -159,7 +159,7 @@ fn setup(
                 .insert(BattlePanelVisibly);
 
             parent
-                .spawn_bundle(Text2dBundle {
+                .spawn(Text2dBundle {
                     text: Text {
                         sections: vec![TextSection {
                             value: "DEF".to_string(),
